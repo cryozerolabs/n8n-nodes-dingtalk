@@ -1,10 +1,19 @@
 {
   "name": "@cryozerolabs/n8n-nodes-dingtalk",
   "version": "0.1.0",
-  "description": "Dingtalk Node for n8n",
+  "description": "Dingtalk(钉钉) nodes for n8n: Notable(AI表格)、User API、auto token refresh",
   "license": "MIT",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "n8n",
+    "n8n-nodes",
+    "dingtalk",
+    "钉钉",
+    "AI表格",
+    "notable",
+    "飞书",
+    "workflow",
+    "automation"
   ],
   "author": {
     "name": "williamsuen",
@@ -14,6 +23,7 @@
     "type": "git",
     "url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk.git"
   },
+  "homepage": "https://github.com/cryozerolabs/n8n-nodes-dingtalk",
   "scripts": {
     "build": "n8n-node build",
     "build:watch": "tsc --watch",
