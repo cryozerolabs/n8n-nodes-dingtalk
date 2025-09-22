@@ -35,8 +35,8 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: 'AI表格 获取所有数据表',
-  description: '获取 AI 表格下的所有数据表',
+  name: '获取所有数据表',
+  description: '获取AI表格所有的数据表',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {

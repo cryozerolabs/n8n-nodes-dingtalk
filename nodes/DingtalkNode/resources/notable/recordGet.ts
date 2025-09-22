@@ -7,7 +7,7 @@ import type {
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 
-const OP = 'notable.sheet.delete';
+const OP = 'notable.record.get';
 
 // 只在当前操作显示这些参数
 const showOnly = { show: { operation: [OP] } };
@@ -19,7 +19,7 @@ const properties: INodeProperties[] = [
     type: 'string',
     default: '',
     required: true,
-    description: 'AI表格ID, 可通过AI表格 解析URL 操作获取',
+    description: '可通过AI表格 解析URL 操作获取',
     displayOptions: showOnly,
   },
   {
@@ -29,6 +29,15 @@ const properties: INodeProperties[] = [
     default: '',
     required: true,
     description: '目标数据表的 ID 或名称',
+    displayOptions: showOnly,
+  },
+  {
+    displayName: '记录ID (recordId)',
+    name: 'recordId',
+    type: 'string',
+    default: '',
+    required: true,
+    description: '要查询的记录 ID',
     displayOptions: showOnly,
   },
   {
@@ -44,18 +53,19 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: '删除数据表',
-  description: '在AI表格中删除一个数据表',
+  name: '获取记录',
+  description: '获取AI表格中的一行记录',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const baseId = this.getNodeParameter('baseId', itemIndex) as string;
     const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
+    const recordId = this.getNodeParameter('recordId', itemIndex) as string;
     const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
 
     const resp = await request.call(this, {
-      method: 'DELETE',
-      url: `/notable/bases/${baseId}/sheets/${sheet}`,
+      method: 'GET',
+      url: `/notable/bases/${baseId}/sheets/${sheet}/records/${recordId}`,
       qs: { operatorId },
     });
 

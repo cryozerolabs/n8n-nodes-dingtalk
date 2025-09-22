@@ -11,7 +11,7 @@ const properties: INodeProperties[] = [];
 
 const op: OperationDef = {
   value: OP,
-  name: '认证 获取当前应用的 Access Token',
+  name: '获取当前应用的 Access Token',
   description: '直接从凭据（运行期）读取当前 access_token，不发起任何网络请求',
   properties,
 

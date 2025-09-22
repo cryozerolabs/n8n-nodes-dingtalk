@@ -6,8 +6,9 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
+import { parseJsonBody } from '../../../shared/validation';
 
-const OP = 'notable.sheet.delete';
+const OP = 'notable.record.update';
 
 // 只在当前操作显示这些参数
 const showOnly = { show: { operation: [OP] } };
@@ -19,7 +20,7 @@ const properties: INodeProperties[] = [
     type: 'string',
     default: '',
     required: true,
-    description: 'AI表格ID, 可通过AI表格 解析URL 操作获取',
+    description: '可通过AI表格 解析URL 操作获取',
     displayOptions: showOnly,
   },
   {
@@ -28,7 +29,7 @@ const properties: INodeProperties[] = [
     type: 'string',
     default: '',
     required: true,
-    description: '目标数据表的 ID 或名称',
+    description: '可通过AI表格 解析URL 操作获取sheetId',
     displayOptions: showOnly,
   },
   {
@@ -40,23 +41,44 @@ const properties: INodeProperties[] = [
     description: '可通过用户管理 查询用户详情 获取',
     displayOptions: showOnly,
   },
+  {
+    displayName: '请求体 JSON',
+    name: 'body',
+    type: 'json',
+    default: JSON.stringify({
+      records: [
+        {
+          id: 'String',
+          fields: { 标题: '新标题' },
+        },
+      ],
+    }),
+    required: true,
+    description:
+      '官方文档: https://open.dingtalk.com/document/development/api-noatable-updaterecords',
+    displayOptions: showOnly,
+  },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '删除数据表',
-  description: '在AI表格中删除一个数据表',
+  name: '更新记录',
+  description: '在数据表中更新多行记录',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const baseId = this.getNodeParameter('baseId', itemIndex) as string;
     const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
     const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
+    const raw = this.getNodeParameter('body', itemIndex) as unknown;
+
+    const body = parseJsonBody(raw, this.getNode(), itemIndex);
 
     const resp = await request.call(this, {
-      method: 'DELETE',
-      url: `/notable/bases/${baseId}/sheets/${sheet}`,
+      method: 'PUT',
+      url: `/notable/bases/${baseId}/sheets/${sheet}/records`,
       qs: { operatorId },
+      body,
     });
 
     const out: IDataObject = resp as unknown as IDataObject;

@@ -44,7 +44,7 @@ function loadAllResourceBundles(resourcesDir: string): ResourceBundle[] {
     throw new ApplicationError(`Duplicate resource detected: ${dups.map(([v]) => v).join(', ')}`);
 
   // 排序
-  bundles.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans-CN'));
+  bundles.sort((a, b) => a.value.localeCompare(b.value, 'zh-Hans-CN'));
   return bundles;
 }
 
@@ -77,7 +77,7 @@ export class DingtalkNode implements INodeType {
     icon: 'file:icon.png',
     group: ['transform'],
     version: 1,
-    // 副标题：显示 “资源 · 操作短名”
+    // 副标题: 显示 “资源 · 操作短名”
     subtitle: '={{$parameter["operation"]}}',
     description: 'Interact with the Dingtalk API',
     defaults: { name: 'Dingtalk Node' },

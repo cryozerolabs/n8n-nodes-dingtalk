@@ -26,8 +26,8 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: 'AI表格 解析URL',
-  description: '从钉钉 AI 表格 URL 中解析 baseId、sheetId、viewId（例如: alidocs 链接）',
+  name: '解析URL',
+  description: '从钉钉 AI 表格 URL 中解析 baseId、sheetId、viewId',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
@@ -45,7 +45,7 @@ const op: OperationDef = {
     const nodesIdx = segments.findIndex((s) => s === 'nodes');
     const baseId = nodesIdx >= 0 && nodesIdx + 1 < segments.length ? segments[nodesIdx + 1] : '';
 
-    // 解析 query：优先从 iframeQuery（URL 编码后的查询串）拿 sheetId/viewId；否则回退到主查询参数
+    // 解析 query: 优先从 iframeQuery（URL 编码后的查询串）拿 sheetId/viewId；否则回退到主查询参数
     let sheetId = u.searchParams.get('sheetId') ?? '';
     let viewId = u.searchParams.get('viewId') ?? '';
 

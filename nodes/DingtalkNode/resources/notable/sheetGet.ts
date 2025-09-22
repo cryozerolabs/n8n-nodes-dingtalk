@@ -44,8 +44,8 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: 'AI表格 获取数据表',
-  description: '获取 AI 表格中的某个数据表信息',
+  name: '获取数据表',
+  description: '获取AI表格中一个数据表的信息',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
@@ -57,7 +57,6 @@ const op: OperationDef = {
       method: 'GET',
       url: `/notable/bases/${baseId}/sheets/${sheet}`,
       qs: { operatorId },
-      headers: { Accept: 'application/json' },
     });
 
     const out: IDataObject = resp as unknown as IDataObject;

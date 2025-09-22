@@ -18,7 +18,7 @@ function normalizeUrl(u?: string): string | undefined {
 function looksLikeTokenProblem(body: unknown): boolean {
   try {
     const s = JSON.stringify(body ?? {}).toLowerCase();
-    // 常见提示：access_token is blank / invalid / expired / 不合法 等
+    // 常见提示: access_token is blank / invalid / expired / 不合法 等
     return (
       s.includes('access_token') &&
       (s.includes('blank') ||
@@ -33,41 +33,57 @@ function looksLikeTokenProblem(body: unknown): boolean {
 }
 
 async function originRequest(this: Ctx, options: IRequestOptions, clearAccessToken = false) {
-  // 读取已保存的凭据，并可在本次请求“临时覆盖 accessToken”
+  // 读取已保存的凭据，并可在本次请求"临时覆盖 accessToken"
   const credentials = await (this as IExecuteFunctions).getCredentials('dingtalkApi');
 
   const url = normalizeUrl(options.url);
   // 相对地址自动补 baseURL
   const baseURL = options.baseURL ?? (isAbsoluteUrl(url) ? undefined : DEFAULT_BASE_URL);
 
-  // 统一打点：发出前
-  this.logger?.debug?.('request (before)', {
-    method: options.method,
+  // 设置默认值
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+
+  const mergedOptions = {
+    ...options,
     url,
     baseURL,
-    qs: options.qs,
-    headers: options.headers ? Object.keys(options.headers) : undefined,
-    json: options.json,
+    json: options.json ?? true,
+    headers: {
+      ...defaultHeaders,
+      ...options.headers,
+    },
+  };
+
+  // 统一打点: 发出前
+  this.logger?.debug?.('request (before)', {
+    method: mergedOptions.method,
+    url,
+    baseURL,
+    qs: mergedOptions.qs,
+    headers: Object.keys(mergedOptions.headers),
+    json: mergedOptions.json,
   });
 
   const resp = await this.helpers.requestWithAuthentication.call(
     this,
     'dingtalkApi',
-    { ...options, url, baseURL, json: options.json ?? true },
+    mergedOptions,
     {
-      // 关键：用临时的“解密凭据覆盖”，让 accessToken 可被清空，从而触发 preAuthentication 重新取
+      // 用临时的"解密凭据覆盖"，让 accessToken 可被清空，从而触发 preAuthentication 重新取
       // @ts-expect-error n8n 内部允许这个第三参
       credentialsDecrypted: {
         data: {
           ...credentials,
-          // 关键：调试时第一发用坏 token；或清空以触发 preAuthentication
           accessToken: clearAccessToken ? '' : credentials.accessToken,
         },
       },
     },
   );
 
-  // 统一打点：收到后
+  // 统一打点: 收到后
   this.logger?.debug?.('response (after)', {
     url: options.url,
     status: resp?.statusCode ?? resp?.status ?? 'ok',
