@@ -6,7 +6,6 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { parseJsonBody } from '../../../shared/validation';
 
 const OP = 'notable.field.delete';
 

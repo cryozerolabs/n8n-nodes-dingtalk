@@ -127,7 +127,7 @@
 - **Headers**: 
   ```json
   {
-    "x-acs-dingtalk-access-token": "{{ $('获取访问令牌').first().json.accessToken }}",
+    "x-acs-dingtalk-access-token": "{{ $json.accessToken }} }}",
     "Content-Type": "application/json"
   }
   ```
@@ -148,12 +148,8 @@
 
 所有示例工作流都存放在 `examples/` 目录中，你可以：
 
-1. **直接下载单个文件**：访问 [examples 目录](https://github.com/cryozerolabs/n8n-nodes-dingtalk/tree/main/examples) 下载需要的 JSON 文件
-2. **克隆整个仓库**：
-   ```bash
-   git clone https://github.com/cryozerolabs/n8n-nodes-dingtalk.git
-   cd n8n-nodes-dingtalk/examples
-   ```
+**直接下载单个文件**：访问 [examples 目录](https://github.com/cryozerolabs/n8n-nodes-dingtalk/tree/main/examples) 下载需要的 JSON 文件
+
 
 ### 示例内容
 
