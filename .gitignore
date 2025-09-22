@@ -1,0 +1,175 @@
+# Node.js 依赖和包管理
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn-integrity
+package-lock.json
+pnpm-lock.yaml
+
+# 编译输出
+dist/
+build/
+*.tsbuildinfo
+*.js.map
+
+# 环境变量和配置
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 日志文件
+logs/
+*.log
+
+# 运行时文件
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率报告
+coverage/
+.nyc_output/
+
+# 缓存目录
+.cache/
+.parcel-cache/
+
+# TypeScript 缓存
+*.tsbuildinfo
+
+# ESLint 缓存
+.eslintcache
+
+# Prettier 缓存
+.prettierrc.cache
+
+# 测试文件
+.coverage/
+test-results/
+
+# n8n 特定文件
+# n8n 本地开发数据库
+.n8n/
+n8n.db
+
+# n8n 加密密钥
+encryption.key
+
+# 临时文件和备份
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# 压缩文件
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# 可选的 npm 缓存目录
+.npm
+
+# 可选的 eslint 缓存
+.eslintcache
+
+# Microbundle 缓存
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# 可选的 REPL 历史
+.node_repl_history
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# SublimeText
+*.sublime-workspace
+*.sublime-project
+
+# 开发时的临时图标文件
+icon-temp.*
+temp-icon.*
+
+# 本地调试配置
+debug.log
+debug-*.log
+
+# macOS 特定
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows 特定
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux 特定
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Vim
+*.swp
+*.swo
+*.swn
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# 项目特定的忽略文件
+credentials.json
+secrets/
+private/
+
+# 文档生成文件
+docs/_build/
