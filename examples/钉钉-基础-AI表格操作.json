@@ -24,7 +24,7 @@
       "typeVersion": 1,
       "position": [
         1184,
-        -80
+        -352
       ],
       "id": "450de4e9-9fb7-4dd5-a15f-aa8b9d3169fd",
       "name": "AI表格 新建数据表",
@@ -67,7 +67,7 @@
       "typeVersion": 1,
       "position": [
         1184,
-        -496
+        -768
       ],
       "id": "c2014ecc-c98a-41a3-b53b-bdb27a346c87",
       "name": "AI表格 获取数据表",
@@ -110,7 +110,7 @@
       "typeVersion": 1,
       "position": [
         1824,
-        -80
+        -352
       ],
       "id": "2e46516c-cd9b-48e7-9683-2b465fe12926",
       "name": "AI表格 删除数据表",
@@ -132,7 +132,7 @@
       "typeVersion": 1,
       "position": [
         1184,
-        -288
+        -560
       ],
       "id": "31e35e39-d02b-47e0-8158-b9c60a72563e",
       "name": "AI表格 获取所有数据表",
@@ -156,7 +156,7 @@
       "typeVersion": 1,
       "position": [
         1536,
-        -80
+        -352
       ],
       "id": "758d4c9f-2fb8-4416-97b5-e2469226efd7",
       "name": "AI表格 更新数据表",
@@ -180,7 +180,7 @@
       "typeVersion": 1,
       "position": [
         1184,
-        432
+        160
       ],
       "id": "a8cb0227-1ca9-4cdc-bc29-616b1a3d0786",
       "name": "AI表格 新增记录",
@@ -204,7 +204,7 @@
       "typeVersion": 1,
       "position": [
         1184,
-        272
+        0
       ],
       "id": "146d8408-e99b-4937-ae9e-6389edcb904c",
       "name": "AI表格 列出多行记录",
@@ -251,7 +251,7 @@
       "typeVersion": 1,
       "position": [
         1536,
-        432
+        160
       ],
       "id": "9bfbd084-c04c-4bc5-997c-c58235eaba6d",
       "name": "AI表格 更新记录",
@@ -275,7 +275,7 @@
       "typeVersion": 1,
       "position": [
         1824,
-        432
+        160
       ],
       "id": "4e695139-6c36-47e4-b968-7d7c1e48e610",
       "name": "AI表格 删除多行记录",
@@ -299,7 +299,7 @@
       "typeVersion": 1,
       "position": [
         1536,
-        272
+        0
       ],
       "id": "fcbee36b-b409-4f75-9f74-da4e470195f7",
       "name": "AI表格 获取记录",
@@ -320,7 +320,7 @@
       "typeVersion": 1,
       "position": [
         1088,
-        -592
+        -864
       ],
       "id": "e794611a-966e-4741-8066-574c3f88c955",
       "name": "Sticky Note"
@@ -336,7 +336,7 @@
       "typeVersion": 1,
       "position": [
         1088,
-        144
+        -128
       ],
       "id": "2764711b-5979-4750-9283-16425d8bbb74",
       "name": "Sticky Note1"
@@ -376,6 +376,118 @@
           "name": "Dingtalk account"
         }
       }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.getAll",
+        "baseId": "={{ $json.baseId }}",
+        "sheetIdOrName": "={{ $json.sheetId }}",
+        "operatorId": "={{ $('getUnionId').item.json.unionId }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        496
+      ],
+      "id": "f7a9e705-ddd7-40b7-8815-5755284bd2ea",
+      "name": "AI表格 获取所有字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.create",
+        "baseId": "={{ $json.baseId }}",
+        "sheetIdOrName": "={{ $json.sheetId }}",
+        "operatorId": "={{ $('getUnionId').item.json.unionId }}",
+        "body": "={\"name\":\"状态\",\"property\":{\"choices\":[{\"name\":\"完成\"},{\"name\":\"失败\"}]},\"type\":\"singleSelect\"}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        704
+      ],
+      "id": "f9658988-b5c4-4607-8a88-141cca922480",
+      "name": "AI表格 创建字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.update",
+        "baseId": "={{ $('AI表格 解析URL').item.json.baseId }}",
+        "sheetIdOrName": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+        "fieldIdOrName": "={{ $json.id }}",
+        "operatorId": "={{ $('getUnionId').item.json.unionId }}",
+        "body": "={\"name\":\"性别\",\"property\":{\"choices\":[{\n        \"name\": \"男\"\n    }, {\n        \"name\": \"女\"\n    }]}, \"type\": \"singleSelect\"}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        704
+      ],
+      "id": "bd24121c-f827-4c2c-bfae-6b0e98ecea42",
+      "name": "AI表格 更新字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.delete",
+        "baseId": "={{ $('AI表格 解析URL').item.json.baseId }}",
+        "sheetIdOrName": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+        "fieldIdOrName": "={{ $json.id }}",
+        "operatorId": "={{ $('getUnionId').item.json.unionId }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        704
+      ],
+      "id": "14191d6e-88a6-4948-868b-b3e306681904",
+      "name": "AI表格 删除字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI表格 - 字段操作",
+        "height": 464,
+        "width": 1008,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        400
+      ],
+      "id": "b867e9dc-732b-4ccc-b98d-c9cee302d4dc",
+      "name": "Sticky Note3"
     }
   ],
   "pinData": {},
@@ -421,6 +533,16 @@
           },
           {
             "node": "AI表格 列出多行记录",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 获取所有字段",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 创建字段",
             "type": "main",
             "index": 0
           }
@@ -527,13 +649,35 @@
       "main": [
         []
       ]
+    },
+    "AI表格 创建字段": {
+      "main": [
+        [
+          {
+            "node": "AI表格 更新字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 更新字段": {
+      "main": [
+        [
+          {
+            "node": "AI表格 删除字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "6b4a8721-c0b1-45e3-a46a-706f0b16b4a4",
+  "versionId": "2292bd4a-84bb-471d-ab20-36349a3bbb9d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
