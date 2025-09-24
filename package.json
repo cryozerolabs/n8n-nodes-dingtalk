@@ -1,6 +1,6 @@
 {
   "name": "@cryozerolabs/n8n-nodes-dingtalk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Dingtalk(钉钉) nodes for n8n: Notable(AI表格)、User API、auto token refresh",
   "license": "MIT",
   "keywords": [

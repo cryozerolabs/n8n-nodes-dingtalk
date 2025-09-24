@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import {
   NodeConnectionType,
   type INodeType,
@@ -13,43 +10,23 @@ import {
 } from 'n8n-workflow';
 import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
+import authBundle from './resources/auth';
+import notableBundle from './resources/notable';
+import userBundle from './resources/user';
 
-function loadAllResourceBundles(resourcesDir: string): ResourceBundle[] {
-  const bundles: ResourceBundle[] = [];
-  if (!fs.existsSync(resourcesDir)) return bundles;
+// 静态导入所有资源包
+const bundles: ResourceBundle[] = [authBundle, notableBundle, userBundle];
 
-  const entries = fs.readdirSync(resourcesDir, { withFileTypes: true });
-  for (const e of entries) {
-    if (!e.isDirectory()) continue;
-    const idx = path.join(resourcesDir, e.name, 'index.js');
-    if (!fs.existsSync(idx)) continue;
-    const mod = require(idx);
-    const def: unknown = mod.default ?? mod.bundle ?? mod.resource;
-    if (!def || typeof def !== 'object') continue;
-    const rb = def as ResourceBundle;
-    if (
-      typeof rb.value === 'string' &&
-      typeof rb.name === 'string' &&
-      Array.isArray(rb.operations)
-    ) {
-      bundles.push(rb);
-    }
-  }
-
-  // 资源去重校验
-  const seen: Record<string, number> = {};
-  for (const b of bundles) seen[b.value] = (seen[b.value] ?? 0) + 1;
-  const dups = Object.entries(seen).filter(([, c]) => c > 1);
-  if (dups.length)
-    throw new ApplicationError(`Duplicate resource detected: ${dups.map(([v]) => v).join(', ')}`);
-
-  // 排序
-  bundles.sort((a, b) => a.value.localeCompare(b.value, 'zh-Hans-CN'));
-  return bundles;
+// 资源去重校验
+const seen: Record<string, number> = {};
+for (const b of bundles) seen[b.value] = (seen[b.value] ?? 0) + 1;
+const dups = Object.entries(seen).filter(([, c]) => c > 1);
+if (dups.length) {
+  throw new ApplicationError(`Duplicate resource detected: ${dups.map(([v]) => v).join(', ')}`);
 }
 
-const resourcesDir = path.join(__dirname, 'resources'); // dist/nodes/DingtalkNode/resources
-const bundles = loadAllResourceBundles(resourcesDir);
+// 排序
+bundles.sort((a, b) => a.value.localeCompare(b.value, 'zh-Hans-CN'));
 
 // Resource 下拉
 const resourceProperty: INodeProperties = {

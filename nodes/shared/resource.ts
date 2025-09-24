@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import type { INodeProperties } from 'n8n-workflow';
 import type { OperationDef } from './operation';
 
@@ -31,57 +28,47 @@ function attachResourceShow(props: INodeProperties[], resource: string): INodePr
   });
 }
 
-/** 扫描指定目录，加载默认导出的 OperationDef（仅 .js，排除 index.js） */
-export function loadOperationsFromDirSync(dir: string): OperationDef[] {
-  const ops: OperationDef[] = [];
-  if (!fs.existsSync(dir)) return ops;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const e of entries) {
-    if (!e.isFile()) continue;
-    const file = path.join(dir, e.name);
-    if (!file.endsWith('.js')) continue;
-    if (path.basename(file).startsWith('index.')) continue;
-
-    const mod = require(file);
-    const def: unknown = mod.default ?? mod.op ?? mod.operation;
-    if (!def || typeof def !== 'object') continue;
-
-    const od = def as OperationDef;
+/** 验证和处理操作定义列表 */
+function processOperations(operations: OperationDef[]): OperationDef[] {
+  // 验证操作定义
+  for (const od of operations) {
     if (
-      typeof od.value === 'string' &&
-      typeof od.name === 'string' &&
-      Array.isArray(od.properties) &&
-      typeof od.run === 'function'
+      typeof od.value !== 'string' ||
+      typeof od.name !== 'string' ||
+      !Array.isArray(od.properties) ||
+      typeof od.run !== 'function'
     ) {
-      ops.push(od);
+      throw new Error(
+        `Invalid operation definition: ${JSON.stringify({ value: od.value, name: od.name })}`,
+      );
     }
   }
 
-  // 单目录内去重 + 排序
+  // 去重校验
   const seen: Record<string, number> = {};
-  for (const o of ops) seen[o.value] = (seen[o.value] ?? 0) + 1;
+  for (const o of operations) seen[o.value] = (seen[o.value] ?? 0) + 1;
   if (Object.values(seen).some((c) => c > 1)) {
     const dupList = Object.entries(seen)
       .filter(([, c]) => c > 1)
       .map(([v, c]) => `${v} x${c}`)
       .join(', ');
-    throw new Error(`Duplicate operations in ${dir}: ${dupList}`);
+    throw new Error(`Duplicate operations: ${dupList}`);
   }
 
   // 按照 value 排序
-  ops.sort((a, b) => a.value.localeCompare(b.value, 'zh-Hans-CN'));
-  return ops;
+  const sorted = [...operations];
+  sorted.sort((a, b) => a.value.localeCompare(b.value, 'zh-Hans-CN'));
+  return sorted;
 }
 
-/** 生成资源包: 传入资源名/值 + 目录(__dirname) */
+/** 生成资源包: 传入资源名/值 + 操作列表 */
 export function makeResourceBundle(args: {
   value: string;
   name: string;
-  dir: string;
+  operations: OperationDef[];
 }): ResourceBundle {
-  const { value, name, dir } = args;
-  const operations = loadOperationsFromDirSync(dir);
+  const { value, name } = args;
+  const operations = processOperations(args.operations);
 
   const operationProperty: INodeProperties = {
     displayName: 'Operation',

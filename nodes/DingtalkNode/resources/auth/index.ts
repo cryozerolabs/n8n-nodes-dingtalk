@@ -1,7 +1,8 @@
 import { makeResourceBundle } from '../../../shared/resource';
+import tokenGet from './tokenGet';
 
 export default makeResourceBundle({
-	value: 'auth',
-	name: '应用授权',
-	dir: __dirname, // 指向编译后的 dist/.../resources/notable
+  value: 'auth',
+  name: '应用授权',
+  operations: [tokenGet],
 });
