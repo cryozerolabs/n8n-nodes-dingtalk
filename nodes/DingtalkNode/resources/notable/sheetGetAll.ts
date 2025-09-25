@@ -6,6 +6,7 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
+import { baseRLC, operatorIdRLC } from './common';
 
 const OP = 'notable.sheet.getAll';
 
@@ -14,21 +15,11 @@ const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
   {
-    displayName: 'AI表格ID (baseId)',
-    name: 'baseId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: 'AI表格ID, 可通过AI表格 解析URL 操作获取',
+    ...operatorIdRLC,
     displayOptions: showOnly,
   },
   {
-    displayName: '操作人的 unionId (operatorId)',
-    name: 'operatorId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过用户管理 查询用户详情 获取',
+    ...baseRLC,
     displayOptions: showOnly,
   },
 ];
@@ -47,7 +38,6 @@ const op: OperationDef = {
       method: 'GET',
       url: `/notable/bases/${baseId}/sheets`,
       qs: { operatorId },
-      headers: { Accept: 'application/json' },
     });
 
     const out: IDataObject = resp as unknown as IDataObject;

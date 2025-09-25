@@ -7,6 +7,9 @@ import {
   type IExecuteFunctions,
   NodeOperationError,
   ApplicationError,
+  INodeListSearchResult,
+  ILoadOptionsFunctions,
+  INodePropertyOptions,
 } from 'n8n-workflow';
 import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
@@ -42,11 +45,39 @@ const resourceProperty: INodeProperties = {
 const resourceOperationProps: INodeProperties[] = bundles.map((b) => b.operationProperty);
 const aggregatedParams: INodeProperties[] = bundles.flatMap((b) => b.properties);
 
+type MethodsType = NonNullable<INodeType['methods']>;
+
+const mergedMethods: MethodsType = (() => {
+  const out: Partial<MethodsType> = {};
+  for (const b of bundles) {
+    if (!b.methods) continue;
+
+    for (const [ns, part] of Object.entries(b.methods) as Array<
+      [keyof MethodsType, MethodsType[keyof MethodsType]]
+    >) {
+      if (!part) continue;
+
+      out[ns] ??= {};
+      for (const key of Object.keys(part)) {
+        if (out[ns][key]) {
+          throw new ApplicationError(`Duplicate method name in "${String(ns)}": ${key}`);
+        }
+      }
+      Object.assign(out[ns] as object, part);
+    }
+  }
+
+  console.log(`methods`, out);
+  return out as MethodsType;
+})();
+
 // 运行期操作查找表
 const allOps: OperationDef[] = bundles.flatMap((b) => b.operations);
 const opMap = new Map(allOps.map((o) => [o.value, o]));
 
 export class DingtalkNode implements INodeType {
+  methods = mergedMethods;
+
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node',
     name: 'dingtalkNode',

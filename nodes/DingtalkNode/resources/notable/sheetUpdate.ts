@@ -7,6 +7,7 @@ import type {
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { parseJsonBody } from '../../../shared/validation';
+import { baseRLC, operatorIdRLC, sheetRLC } from './common';
 
 const OP = 'notable.sheet.update';
 
@@ -15,30 +16,15 @@ const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
   {
-    displayName: 'AI表格ID (baseId)',
-    name: 'baseId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过AI表格 解析URL 操作获取',
+    ...operatorIdRLC,
     displayOptions: showOnly,
   },
   {
-    displayName: '数据表ID或名称 (sheetIdOrName)',
-    name: 'sheetIdOrName',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过AI表格 解析URL 操作获取sheetId',
+    ...baseRLC,
     displayOptions: showOnly,
   },
   {
-    displayName: '操作人的 unionId (operatorId)',
-    name: 'operatorId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过用户管理 查询用户详情 获取',
+    ...sheetRLC,
     displayOptions: showOnly,
   },
   {

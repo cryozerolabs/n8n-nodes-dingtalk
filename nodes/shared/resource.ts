@@ -1,5 +1,7 @@
-import type { INodeProperties } from 'n8n-workflow';
+import type { INodeProperties, INodeType } from 'n8n-workflow';
 import type { OperationDef } from './operation';
+
+export type MethodsBundle = Partial<NonNullable<INodeType['methods']>>;
 
 export interface ResourceBundle {
   value: string; // 资源值，如 'notable' / 'user'
@@ -7,6 +9,7 @@ export interface ResourceBundle {
   operations: OperationDef[]; // 本资源下的全部操作
   operationProperty: INodeProperties; // 本资源的 Operation 下拉（带 show.resource）
   properties: INodeProperties[]; // 聚合后的参数（补了 show.resource）
+  methods?: MethodsBundle;
 }
 
 /** 给参数补上 displayOptions.show.resource = [resource]，不覆盖原 operation 过滤 */
@@ -66,8 +69,9 @@ export function makeResourceBundle(args: {
   value: string;
   name: string;
   operations: OperationDef[];
+  methods?: MethodsBundle;
 }): ResourceBundle {
-  const { value, name } = args;
+  const { value, name, methods } = args;
   const operations = processOperations(args.operations);
 
   const operationProperty: INodeProperties = {
@@ -90,5 +94,5 @@ export function makeResourceBundle(args: {
     value,
   );
 
-  return { value, name, operations, operationProperty, properties };
+  return { value, name, operations, operationProperty, properties, methods };
 }

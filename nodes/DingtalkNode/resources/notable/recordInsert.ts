@@ -7,6 +7,7 @@ import type {
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { parseJsonBody } from '../../../shared/validation';
+import { baseRLC, operatorIdRLC, sheetRLC } from './common';
 
 const OP = 'notable.record.insert';
 
@@ -14,33 +15,9 @@ const OP = 'notable.record.insert';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  {
-    displayName: 'AI表格ID (baseId)',
-    name: 'baseId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过AI表格 解析URL 操作获取',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '数据表ID或名称 (sheetIdOrName)',
-    name: 'sheetIdOrName',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '目标数据表的 ID 或名称',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '操作人的 unionId (operatorId)',
-    name: 'operatorId',
-    type: 'string',
-    default: '',
-    required: true,
-    description: '可通过用户管理 查询用户详情 获取',
-    displayOptions: showOnly,
-  },
+  { ...operatorIdRLC, displayOptions: showOnly },
+  { ...baseRLC, displayOptions: showOnly },
+  { ...sheetRLC, displayOptions: showOnly },
   {
     displayName: '请求体 JSON',
     name: 'body',

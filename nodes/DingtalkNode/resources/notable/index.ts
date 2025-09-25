@@ -15,6 +15,8 @@ import sheetGet from './sheetGet';
 import sheetGetAll from './sheetGetAll';
 import sheetUpdate from './sheetUpdate';
 
+import methods from './methods/index';
+
 export default makeResourceBundle({
   value: 'notable',
   name: 'AI表格',
@@ -35,4 +37,5 @@ export default makeResourceBundle({
     sheetGetAll,
     sheetUpdate,
   ],
+  methods,
 });

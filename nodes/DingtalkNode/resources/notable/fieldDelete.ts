@@ -6,6 +6,7 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
+import { baseRLC, operatorIdRLC, sheetRLC } from './common';
 
 const OP = 'notable.field.delete';
 
@@ -13,6 +14,18 @@ const OP = 'notable.field.delete';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
+  {
+    ...operatorIdRLC,
+    displayOptions: showOnly,
+  },
+  {
+    ...baseRLC,
+    displayOptions: showOnly,
+  },
+  {
+    ...sheetRLC,
+    displayOptions: showOnly,
+  },
   {
     displayName: 'AI表格ID (baseId)',
     name: 'baseId',
