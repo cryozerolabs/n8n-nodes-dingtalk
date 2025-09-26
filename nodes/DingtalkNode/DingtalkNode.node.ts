@@ -7,9 +7,6 @@ import {
   type IExecuteFunctions,
   NodeOperationError,
   ApplicationError,
-  INodeListSearchResult,
-  ILoadOptionsFunctions,
-  INodePropertyOptions,
 } from 'n8n-workflow';
 import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';

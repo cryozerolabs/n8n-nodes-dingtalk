@@ -64,7 +64,7 @@ export const sheetRLC: INodeProperties = {
       type: 'list',
       typeOptions: {
         searchListMethod: 'sheetSearch',
-        searchable: false,
+        searchable: true,
       },
     },
     {

@@ -6,7 +6,6 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { parseJsonBody } from '../../../shared/validation';
 import { baseRLC, operatorIdRLC, sheetRLC } from './common';
 
 const OP = 'notable.sheet.update';
@@ -28,15 +27,12 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    displayName: '请求体 JSON',
-    name: 'body',
-    type: 'json',
-    default: JSON.stringify({
-      name: '重命名后的数据表',
-    }),
+    displayName: '数据表名称',
+    name: 'name',
+    type: 'string',
+    default: '',
+    placeholder: '重命名后的数据表',
     required: true,
-    description:
-      '官方文档: https://open.dingtalk.com/document/development/api-noatable-updatesheet',
     displayOptions: showOnly,
   },
 ];
@@ -51,9 +47,11 @@ const op: OperationDef = {
     const baseId = this.getNodeParameter('baseId', itemIndex) as string;
     const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
     const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
-    const raw = this.getNodeParameter('body', itemIndex) as unknown;
+    const name = this.getNodeParameter('name', itemIndex) as string;
 
-    const body = parseJsonBody(raw, this.getNode(), itemIndex);
+    const body = {
+      name,
+    };
 
     const resp = await request.call(this, {
       method: 'PUT',
