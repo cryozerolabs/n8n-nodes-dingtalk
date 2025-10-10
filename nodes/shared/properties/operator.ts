@@ -8,7 +8,7 @@ import {
 /**
  * 操作人覆盖选项 - boolean 开关
  */
-export const overrideOperatorProperty: INodeProperties = {
+const overrideOperatorProperty: INodeProperties = {
   displayName: '不使用凭证中的操作人',
   name: 'overrideOperator',
   type: 'boolean',
@@ -20,7 +20,7 @@ export const overrideOperatorProperty: INodeProperties = {
 /**
  * 操作人ID字段 - 仅在覆盖选项为true时显示
  */
-export const operatorIdProperty: INodeProperties = {
+const operatorIdProperty: INodeProperties = {
   displayName: '操作人的unionId',
   name: 'operatorId',
   type: 'string',

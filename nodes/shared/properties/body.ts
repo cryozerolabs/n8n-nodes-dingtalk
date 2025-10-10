@@ -43,14 +43,14 @@ const sendBodyModeProperty: INodeProperties = {
   options: [
     {
       name: '使用下面定义的表单',
-      value: 'fields',
+      value: 'form',
     },
     {
       name: '使用JSON',
       value: 'json',
     },
   ],
-  default: 'fields',
+  default: 'form',
   description: '如何发送请求体数据',
 };
 
@@ -75,7 +75,7 @@ const jsonBodyProperty: INodeProperties = {
  * @param displayOptions 显示条件
  * @param defaultJsonBody 默认的JSON body内容
  * @param jsonDescription JSON模式的描述
- * @param fieldsProperties 字段模式下的属性数组
+ * @param formProperties 表单模式下的属性数组
  * @returns 包含Body相关属性的数组
  */
 export function bodyProps(
@@ -83,16 +83,16 @@ export function bodyProps(
   options: {
     defaultJsonBody?: string;
     jsonDescription?: string;
-    fieldsProperties?: INodeProperties[];
-    defaultMode?: 'fields' | 'json';
+    formProperties?: INodeProperties[];
+    defaultMode?: 'form' | 'json';
     showModeSelector?: boolean;
   } = {},
 ): INodeProperties[] {
   const {
     defaultJsonBody = '{}',
     jsonDescription = '请求体JSON数据',
-    fieldsProperties = [],
-    defaultMode = 'fields',
+    formProperties = [],
+    defaultMode = 'form',
     showModeSelector = true,
   } = options;
 
@@ -125,26 +125,26 @@ export function bodyProps(
     displayOptions: jsonDisplayOptions,
   });
 
-  // 字段模式的属性
-  if (fieldsProperties.length > 0) {
-    const fieldsDisplayOptions = showModeSelector
+  // 表单模式的属性
+  if (formProperties.length > 0) {
+    const formDisplayOptions = showModeSelector
       ? {
           ...displayOptions,
           show: {
             ...displayOptions.show,
-            sendBody: ['fields'],
+            sendBody: ['form'],
           },
         }
       : displayOptions;
 
-    fieldsProperties.forEach((prop) => {
+    formProperties.forEach((prop) => {
       properties.push({
         ...prop,
         displayOptions: {
           ...prop.displayOptions,
-          ...fieldsDisplayOptions,
+          ...formDisplayOptions,
           show: {
-            ...fieldsDisplayOptions.show,
+            ...formDisplayOptions.show,
             ...prop.displayOptions?.show,
           },
         },
@@ -167,11 +167,11 @@ export function getBodyData(
   itemIndex: number,
   options: {
     showModeSelector?: boolean;
-    defaultMode?: 'fields' | 'json';
-    fieldsBuilder?: (ctx: IExecuteFunctions, itemIndex: number) => IDataObject;
+    defaultMode?: 'form' | 'json';
+    formBuilder?: (ctx: IExecuteFunctions, itemIndex: number) => IDataObject;
   } = {},
 ): IDataObject {
-  const { showModeSelector = true, defaultMode = 'fields', fieldsBuilder } = options;
+  const { showModeSelector = true, defaultMode = 'form', formBuilder } = options;
 
   let sendBodyMode: string;
 
@@ -186,9 +186,9 @@ export function getBodyData(
     const raw = ctx.getNodeParameter('jsonBody', itemIndex, {}) as unknown;
     return parseJsonBody(raw, ctx.getNode(), itemIndex) as IDataObject;
   } else {
-    // 字段模式：使用fieldsBuilder构建body
-    if (fieldsBuilder) {
-      return fieldsBuilder(ctx, itemIndex);
+    // 表单模式：使用fieldsBuilder构建body
+    if (formBuilder) {
+      return formBuilder(ctx, itemIndex);
     }
     return {};
   }

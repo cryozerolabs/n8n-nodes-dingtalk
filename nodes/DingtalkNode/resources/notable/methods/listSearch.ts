@@ -19,16 +19,12 @@ export async function sheetSearch(
     throw new NodeOperationError(this.getNode(), '请先配置 操作人 和 AI表格');
   }
 
-  this.logger.debug(`sheetSearch baseId: ${baseId}, operatorId: ${operatorId}`);
-
   const resp = await request.call(this, {
     method: 'GET',
     url: `/notable/bases/${baseId}/sheets`,
     qs: { operatorId },
   });
-  this.logger.debug(`sheetSearch resp: ${JSON.stringify(resp)}`);
   const items = (resp as IDataObject).value as IDataObject[];
-  this.logger.debug(`sheetSearch items: ${JSON.stringify(items)}`);
   const results: INodeListSearchItems[] = items
     .filter((s) => (filter ? String(s.name).toLowerCase().includes(filter.toLowerCase()) : true))
     .map((s) => ({

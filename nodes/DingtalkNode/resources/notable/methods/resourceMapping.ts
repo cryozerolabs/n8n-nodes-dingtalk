@@ -1,4 +1,5 @@
 import {
+  FieldType,
   IDataObject,
   ILoadOptionsFunctions,
   ResourceMapperField,
@@ -25,6 +26,20 @@ export async function notableGetColumns(
   const value = (resp as IDataObject)?.value;
   if (Array.isArray(value)) {
     for (const field of value) {
+      const typeMap = {
+        text: 'string',
+        number: 'number',
+        singleSelect: 'string',
+        multipleSelect: 'array',
+        date: 'dateTime',
+        user: 'object',
+        department: 'object',
+        attachment: 'object',
+        unidirectionalLink: 'object',
+        bidirectionalLink: 'object',
+        url: 'object',
+      } as Record<string, FieldType>;
+
       fields.push({
         id: field.name,
         displayName: `${field.name} (${field.type})`,
@@ -34,6 +49,7 @@ export async function notableGetColumns(
         display: true,
         removed: true,
         readOnly: false,
+        type: typeMap[field.type] ?? 'string',
       });
     }
   }

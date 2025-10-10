@@ -19,12 +19,12 @@ const properties: INodeProperties[] = [
   ...baseProps(showOnly),
   ...sheetProps(showOnly),
   {
-    displayName: '记录ID (recordId)',
+    displayName: '记录ID',
     name: 'recordId',
     type: 'string',
     default: '',
     required: true,
-    description: '要查询的记录 ID',
+    description: '要查询的记录 ID。可通过 新增记录、列出多行记录 操作获取',
     displayOptions: showOnly,
   },
 ];

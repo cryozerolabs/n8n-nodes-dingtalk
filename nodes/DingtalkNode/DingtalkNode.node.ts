@@ -13,9 +13,10 @@ import type { OperationDef } from '../shared/operation';
 import authBundle from './resources/auth';
 import notableBundle from './resources/notable';
 import userBundle from './resources/user';
+import docBundle from './resources/doc';
 
 // 静态导入所有资源包
-const bundles: ResourceBundle[] = [authBundle, notableBundle, userBundle];
+const bundles: ResourceBundle[] = [authBundle, notableBundle, userBundle, docBundle];
 
 // 资源去重校验
 const seen: Record<string, number> = {};

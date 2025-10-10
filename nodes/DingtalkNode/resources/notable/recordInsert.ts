@@ -8,14 +8,14 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { baseProps, getBase, getSheet, sheetProps } from './common';
 import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
-import { bodyProps } from '../../../shared/properties/body';
+import { bodyProps, getBodyData } from '../../../shared/properties/body';
 
 const OP = 'notable.record.insert';
 
 // 只在当前操作显示这些参数
 const showOnly = { show: { operation: [OP] } };
 
-const fieldsProperties: INodeProperties[] = [
+const formProperties: INodeProperties[] = [
   {
     displayName: 'Columns',
     name: 'columns',
@@ -36,7 +36,7 @@ const fieldsProperties: INodeProperties[] = [
           singular: 'column',
           plural: 'columns',
         },
-        addAllFields: true,
+        addAllFields: false,
         multiKeyMatch: true,
       },
     },
@@ -48,7 +48,7 @@ const properties: INodeProperties[] = [
   ...baseProps(showOnly),
   ...sheetProps(showOnly),
   ...bodyProps(showOnly, {
-    defaultMode: 'fields',
+    defaultMode: 'form',
     defaultJsonBody: JSON.stringify(
       {
         records: [
@@ -64,7 +64,7 @@ const properties: INodeProperties[] = [
     ),
     jsonDescription:
       '请求体JSON数据。<a href="https://open.dingtalk.com/document/development/api-notable-insertrecords" target="_blank">查看官方API文档</a>',
-    fieldsProperties,
+    formProperties,
   }),
 ];
 
@@ -79,44 +79,47 @@ const op: OperationDef = {
     const sheet = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
 
-    const dataMode = this.getNodeParameter('columns.mappingMode', itemIndex) as string;
+    const body = getBodyData(this, itemIndex, {
+      formBuilder: (ctx: IExecuteFunctions, idx: number) => {
+        const result: IDataObject = {};
 
-    // 处理发送的数据
-    const fields: IDataObject = {};
-    if (dataMode === 'defineBelow') {
-      // Map Each Column Manually的情况
-      const record = this.getNodeParameter('columns.value', itemIndex) as IDataObject;
-      // 直接将 record 中的字段复制到 fields
-      Object.assign(fields, record);
-    } else if (dataMode === 'autoMapInputData') {
-      // Auto-map Input Data的情况
-      const inputData = this.getInputData()[itemIndex];
-      const matchingColumns = this.getNodeParameter(
-        'columns.matchingColumns',
-        itemIndex,
-        [],
-      ) as string[];
+        const dataMode = ctx.getNodeParameter('columns.mappingMode', idx) as string;
+        const fields: IDataObject = {};
+        if (dataMode === 'defineBelow') {
+          const record = ctx.getNodeParameter('columns.value', idx) as IDataObject;
+          Object.assign(fields, record);
+        } else if (dataMode === 'autoMapInputData') {
+          // Auto-map Input Data的情况
+          const inputData = ctx.getInputData()[idx];
+          const matchingColumns = ctx.getNodeParameter(
+            'columns.matchingColumns',
+            idx,
+            [],
+          ) as string[];
 
-      // 如果有匹配列且输入数据存在，则进行字段映射
-      if (matchingColumns.length > 0 && inputData?.json) {
-        const inputJson = inputData.json as IDataObject;
+          // 如果有匹配列且输入数据存在，则进行字段映射
+          if (matchingColumns.length > 0 && inputData?.json) {
+            const inputJson = inputData.json as IDataObject;
 
-        // 只遍历匹配的字段
-        for (const fieldId of matchingColumns) {
-          if (fieldId in inputJson) {
-            fields[fieldId] = inputJson[fieldId];
+            // 只遍历匹配的字段
+            for (const fieldId of matchingColumns) {
+              if (fieldId in inputJson) {
+                fields[fieldId] = inputJson[fieldId];
+              }
+            }
           }
         }
-      }
-    }
+
+        result.records = [{ fields }];
+        return result;
+      },
+    });
 
     const resp = await request.call(this, {
       method: 'POST',
       url: `/notable/bases/${baseId}/sheets/${sheet}/records`,
       qs: { operatorId },
-      body: {
-        records: [{ fields }],
-      },
+      body,
     });
 
     const out: IDataObject = resp as unknown as IDataObject;
