@@ -6,8 +6,9 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { parseJsonBody } from '../../../shared/validation';
-import { baseRLC, operatorIdRLC, sheetRLC } from './common';
+import { bodyProps, parseJsonBody } from '../../../shared/properties/body';
+import { baseProps, getBase, getSheet, sheetProps } from './common';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 
 const OP = 'notable.record.update';
 
@@ -15,32 +16,40 @@ const OP = 'notable.record.update';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  { ...operatorIdRLC, displayOptions: showOnly },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...sheetRLC,
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '请求体 JSON',
-    name: 'body',
-    type: 'json',
-    default: JSON.stringify({
-      records: [
-        {
-          id: 'String',
-          fields: { 标题: '新标题' },
-        },
-      ],
-    }),
-    required: true,
-    description:
-      '官方文档: https://open.dingtalk.com/document/development/api-noatable-updaterecords',
-    displayOptions: showOnly,
-  },
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
+  ...sheetProps(showOnly),
+  ...bodyProps(showOnly, {
+    defaultMode: 'fields',
+    defaultJsonBody: JSON.stringify(
+      {
+        records: [{ id: 'rec001', fields: { 标题: '新标题' } }],
+      },
+      null,
+      2,
+    ),
+  }),
+  // {
+  //   displayName: '请求体 JSON',
+  //   name: 'body',
+  //   type: 'json',
+  //   default: JSON.stringify(
+  //     {
+  //       records: [
+  //         {
+  //           id: 'String',
+  //           fields: { 标题: '新标题' },
+  //         },
+  //       ],
+  //     },
+  //     null,
+  //     2,
+  //   ),
+  //   required: true,
+  //   description:
+  //     '官方文档: https://open.dingtalk.com/document/development/api-noatable-updaterecords',
+  //   displayOptions: showOnly,
+  // },
 ];
 
 const op: OperationDef = {
@@ -50,10 +59,10 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex) as string;
-    const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
-    const raw = this.getNodeParameter('body', itemIndex) as unknown;
+    const baseId = getBase(this, itemIndex);
+    const sheet = getSheet(this, itemIndex);
+    const operatorId = await getOperatorId(this, itemIndex);
+    const raw = this.getNodeParameter('body', itemIndex, {}) as unknown;
 
     const body = parseJsonBody(raw, this.getNode(), itemIndex);
 

@@ -5,15 +5,14 @@ import {
   ResourceMapperFields,
 } from 'n8n-workflow';
 import { request } from '../../../../shared/request';
+import { getOperatorIdForLoadOptions } from '../../../../shared/properties/operator';
 
 export async function notableGetColumns(
   this: ILoadOptionsFunctions,
 ): Promise<ResourceMapperFields> {
   const baseId = this.getNodeParameter('baseId', undefined, { extractValue: true }) as string;
   const sheet = this.getNodeParameter('sheetIdOrName', undefined, { extractValue: true }) as string;
-  const operatorId = this.getNodeParameter('operatorId', undefined, {
-    extractValue: true,
-  }) as string;
+  const operatorId = await getOperatorIdForLoadOptions(this);
 
   const resp = await request.call(this, {
     method: 'GET',
@@ -28,7 +27,7 @@ export async function notableGetColumns(
     for (const field of value) {
       fields.push({
         id: field.name,
-        displayName: field.name,
+        displayName: `${field.name} (${field.type})`,
         required: false,
         defaultMatch: false,
         canBeUsedToMatch: true,

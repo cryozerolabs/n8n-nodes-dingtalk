@@ -6,7 +6,8 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { baseRLC, operatorIdRLC, sheetRLC } from './common';
+import { baseProps, getBase, getSheet, sheetProps } from './common';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 
 const OP = 'notable.field.delete';
 
@@ -14,18 +15,9 @@ const OP = 'notable.field.delete';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  {
-    ...operatorIdRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...sheetRLC,
-    displayOptions: showOnly,
-  },
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
+  ...sheetProps(showOnly),
   {
     displayName: '字段ID或字段名称 (fieldIdOrName)',
     name: 'fieldIdOrName',
@@ -43,10 +35,10 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex) as string;
-    const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
+    const baseId = getBase(this, itemIndex);
+    const sheet = getSheet(this, itemIndex);
     const field = this.getNodeParameter('fieldIdOrName', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
+    const operatorId = await getOperatorId(this, itemIndex);
 
     const resp = await request.call(this, {
       method: 'DELETE',

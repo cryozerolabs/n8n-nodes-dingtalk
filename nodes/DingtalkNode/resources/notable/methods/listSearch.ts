@@ -6,14 +6,12 @@ import {
   NodeOperationError,
 } from 'n8n-workflow';
 import { request } from '../../../../shared/request';
-
+import { getOperatorIdForLoadOptions } from '../../../../shared/properties/operator';
 export async function sheetSearch(
   this: ILoadOptionsFunctions,
   filter?: string,
 ): Promise<INodeListSearchResult> {
-  const operatorId = this.getNodeParameter('operatorId', undefined, {
-    extractValue: true,
-  }) as string;
+  const operatorId = await getOperatorIdForLoadOptions(this);
   const baseId = this.getNodeParameter('baseId', undefined, { extractValue: true }) as string;
 
   if (!operatorId || !baseId) {

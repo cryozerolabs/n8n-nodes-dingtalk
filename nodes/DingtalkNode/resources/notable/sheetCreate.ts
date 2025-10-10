@@ -6,7 +6,8 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { baseRLC, operatorIdRLC } from './common';
+import { baseProps, getBase } from './common';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 
 const OP = 'notable.sheet.create';
 
@@ -14,11 +15,8 @@ const OP = 'notable.sheet.create';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  { ...operatorIdRLC, displayOptions: showOnly },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
   {
     displayName: '数据表名称',
     name: 'name',
@@ -37,8 +35,8 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
+    const baseId = getBase(this, itemIndex);
+    const operatorId = await getOperatorId(this, itemIndex);
     const name = this.getNodeParameter('name', itemIndex) as string;
 
     const body = {

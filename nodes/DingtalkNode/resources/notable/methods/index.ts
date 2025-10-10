@@ -1,9 +1,10 @@
 import * as listSearch from './listSearch';
+import * as loadOptions from './loadOptions';
 import * as resourceMapping from './resourceMapping';
-// import * as loadOptions from './loadOptions';
+
 const methods = {
   listSearch,
+  loadOptions,
   resourceMapping,
-  //   loadOptions,
 };
 export default methods;

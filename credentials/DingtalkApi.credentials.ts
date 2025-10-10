@@ -55,6 +55,13 @@ export class DingtalkApi implements ICredentialType {
       },
       description: '自动获取的AccessToken',
     },
+    {
+      displayName: '操作人ID（unionId）',
+      name: 'userUnionId',
+      type: 'string',
+      default: '',
+      hint: '如果你已经获取了操作人Union ID，可以在这里填写，否则需要通过[用户管理 查询用户详情]获取后，再填写',
+    },
   ];
 
   async preAuthentication(this: IHttpRequestHelper, credentials: ICredentialDataDecryptedObject) {

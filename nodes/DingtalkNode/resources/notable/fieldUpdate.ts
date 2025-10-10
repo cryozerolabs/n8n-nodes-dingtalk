@@ -6,8 +6,9 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { parseJsonBody } from '../../../shared/validation';
-import { baseRLC, operatorIdRLC, sheetRLC } from './common';
+import { parseJsonBody } from '../../../shared/properties/body';
+import { baseProps, getBase, getSheet, sheetProps } from './common';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 
 const OP = 'notable.field.update';
 
@@ -15,18 +16,9 @@ const OP = 'notable.field.update';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  {
-    ...operatorIdRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...sheetRLC,
-    displayOptions: showOnly,
-  },
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
+  ...sheetProps(showOnly),
   {
     displayName: '字段ID或字段名称 (fieldIdOrName)',
     name: 'fieldIdOrName',
@@ -39,19 +31,23 @@ const properties: INodeProperties[] = [
     displayName: '请求体 JSON',
     name: 'body',
     type: 'json',
-    default: JSON.stringify({
-      name: '字段名',
-      property: {
-        choices: [
-          {
-            name: '选项一',
-          },
-          {
-            name: '选项二',
-          },
-        ],
+    default: JSON.stringify(
+      {
+        name: '字段名',
+        property: {
+          choices: [
+            {
+              name: '选项一',
+            },
+            {
+              name: '选项二',
+            },
+          ],
+        },
       },
-    }),
+      null,
+      2,
+    ),
     required: true,
     description: '官方文档: https://open.dingtalk.com/document/orgapp/api-noatable-updatefield',
     displayOptions: showOnly,
@@ -65,10 +61,10 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex) as string;
-    const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
+    const baseId = getBase(this, itemIndex);
+    const sheet = getSheet(this, itemIndex);
     const field = this.getNodeParameter('fieldIdOrName', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
+    const operatorId = await getOperatorId(this, itemIndex);
     const raw = this.getNodeParameter('body', itemIndex) as unknown;
 
     const body = parseJsonBody(raw, this.getNode(), itemIndex);

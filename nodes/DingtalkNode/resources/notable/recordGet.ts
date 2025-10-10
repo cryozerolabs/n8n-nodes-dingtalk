@@ -6,7 +6,8 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { baseRLC, operatorIdRLC, sheetRLC } from './common';
+import { baseProps, getBase, getSheet, sheetProps } from './common';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 
 const OP = 'notable.record.get';
 
@@ -14,18 +15,9 @@ const OP = 'notable.record.get';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
-  {
-    ...operatorIdRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...sheetRLC,
-    displayOptions: showOnly,
-  },
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
+  ...sheetProps(showOnly),
   {
     displayName: '记录ID (recordId)',
     name: 'recordId',
@@ -44,16 +36,10 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex, '', {
-      extractValue: true,
-    }) as string;
-    const sheet = this.getNodeParameter('sheetIdOrName', itemIndex, '', {
-      extractValue: true,
-    }) as string;
+    const baseId = getBase(this, itemIndex);
+    const sheet = getSheet(this, itemIndex);
     const recordId = this.getNodeParameter('recordId', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex, '', {
-      extractValue: true,
-    }) as string;
+    const operatorId = await getOperatorId(this, itemIndex);
 
     const resp = await request.call(this, {
       method: 'GET',

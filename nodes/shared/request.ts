@@ -55,6 +55,7 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
       ...defaultHeaders,
       ...options.headers,
     },
+    qs: options.qs,
   };
 
   // 统一打点: 发出前
@@ -65,6 +66,7 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
     qs: mergedOptions.qs,
     headers: Object.keys(mergedOptions.headers),
     json: mergedOptions.json,
+    body: mergedOptions.body,
   });
 
   const resp = await this.helpers.requestWithAuthentication.call(

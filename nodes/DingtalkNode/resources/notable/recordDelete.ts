@@ -6,39 +6,47 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { parseJsonBody } from '../../../shared/validation';
-import { baseRLC, operatorIdRLC, sheetRLC } from './common';
+import { bodyProps, getBodyData } from '../../../shared/properties/body';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
+import {
+  commaSeparatedStringProperty,
+  getCommaSeparatedValues,
+} from '../../../shared/properties/commaSeparatedString';
+import { baseProps, getBase, getSheet, sheetProps } from './common';
 
 const OP = 'notable.record.delete';
 
 // 只在当前操作显示这些参数
 const showOnly = { show: { operation: [OP] } };
 
-const properties: INodeProperties[] = [
-  {
-    ...operatorIdRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...baseRLC,
-    displayOptions: showOnly,
-  },
-  {
-    ...sheetRLC,
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '请求体 JSON',
-    name: 'body',
-    type: 'json',
-    default: JSON.stringify({
-      recordIds: ['String'],
-    }),
+// 定义表单模式下的属性
+const formProperties: INodeProperties[] = [
+  commaSeparatedStringProperty({
+    displayName: '记录ID列表',
+    name: 'recordIds',
     required: true,
-    description:
-      '官方文档: https://open.dingtalk.com/document/development/api-noatable-deleterecords',
-    displayOptions: showOnly,
-  },
+    placeholder: '例如：rec001, rec002',
+    description: '要删除的记录ID列表，多个参数请用","分隔。支持表达式和固定值',
+  }),
+];
+
+const properties: INodeProperties[] = [
+  ...operatorProps(showOnly),
+  ...baseProps(showOnly),
+  ...sheetProps(showOnly),
+  ...bodyProps(showOnly, {
+    defaultMode: 'form',
+    defaultJsonBody: JSON.stringify(
+      {
+        recordIds: ['rec001', 'rec002'],
+      },
+      null,
+      2,
+    ),
+    jsonDescription:
+      '请求体JSON数据。<a href="https://open.dingtalk.com/document/development/api-noatable-deleterecords" target="_blank">查看API文档</a>',
+    formProperties,
+  }),
 ];
 
 const op: OperationDef = {
@@ -48,12 +56,20 @@ const op: OperationDef = {
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
-    const baseId = this.getNodeParameter('baseId', itemIndex) as string;
-    const sheet = this.getNodeParameter('sheetIdOrName', itemIndex) as string;
-    const operatorId = this.getNodeParameter('operatorId', itemIndex) as string;
-    const raw = this.getNodeParameter('body', itemIndex) as unknown;
+    const baseId = getBase(this, itemIndex);
+    const sheet = getSheet(this, itemIndex);
+    const operatorId = await getOperatorId(this, itemIndex);
 
-    const body = parseJsonBody(raw, this.getNode(), itemIndex);
+    // 使用新的getBodyData方法获取请求体
+    const body = getBodyData(this, itemIndex, {
+      formBuilder: (ctx: IExecuteFunctions, idx: number) => {
+        const recordIds = getCommaSeparatedValues(ctx, idx, 'recordIds');
+
+        return {
+          recordIds,
+        };
+      },
+    });
 
     const resp = await request.call(this, {
       method: 'POST',
