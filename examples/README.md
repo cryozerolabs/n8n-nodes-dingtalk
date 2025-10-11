@@ -5,7 +5,7 @@
 ## 📁 示例文件
 
 ### 基础功能示例
-- `钉钉-基础-AI表格操作.json` - 完整的 AI 表格操作演示，包括：
+- `钉钉-基础-AI表格操作_v0.2.0.json` - 完整的 AI 表格操作演示，包括：
   - 用户信息获取（获取 unionId）
   - AI 表格 URL 解析（提取 baseId、sheetId、viewId）
   - 数据表管理（创建、获取、更新、删除）
@@ -69,6 +69,3 @@ https://raw.githubusercontent.com/cryozerolabs/n8n-nodes-dingtalk/main/examples/
 ## 🔄 持续更新
 
 我们会持续添加新的示例，涵盖更多使用场景。如果你有好的示例想要分享，欢迎提交 Pull Request！
-
-
-https://alidocs.dingtalk.com/i/nodes/gvNG4YZ7JnkovqmwFZX41RPl82LD0oRE?iframeQuery=entrance%3Ddata%26sheetId%3DhERWDMS%26source%3Dnotable_portal%26viewId%3DqvGDAH2&sideCollapsed=true

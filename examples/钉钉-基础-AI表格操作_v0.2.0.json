@@ -1,0 +1,937 @@
+{
+  "name": "钉钉-基础-AI表格操作_v0.2.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        0
+      ],
+      "id": "3cdaa725-0463-46cb-8f97-8cda4c4d6bba",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.sheet.create",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        },
+        "name": "={{ $now.toMillis() }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -320
+      ],
+      "id": "4089f173-01ff-4c40-890b-f5c76936ad8a",
+      "name": "AI表格 新建数据表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.parseUrl",
+        "url": "https://alidocs.dingtalk.com/i/nodes/baseId?iframeQuery=entrance%3Ddata%26sheetId%3DsheetId%26source%3Dnotable_portal%26viewId%3DviewId&sideCollapsed=true"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        720,
+        0
+      ],
+      "id": "f2324e56-800e-4156-8cee-f10b0410bbbf",
+      "name": "AI表格 解析URL",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.sheet.get",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.value[0].id }}",
+          "mode": "id"
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -464
+      ],
+      "id": "d8541334-caaf-493e-934d-e208f6e55eeb",
+      "name": "AI表格 获取数据表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "operation": "user.get",
+        "userId": "0160621554-1383491704"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        528,
+        432
+      ],
+      "id": "e076b65b-461c-4249-b833-0f4a832fee1f",
+      "name": "用户管理 查询用户详情",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.sheet.delete",
+        "baseId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -320
+      ],
+      "id": "35725a2e-38a9-41c7-bc05-20248a5661cc",
+      "name": "AI表格 删除数据表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.sheet.getAll",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -464
+      ],
+      "id": "ff19f879-f767-4b4b-b3db-9d2030255bb8",
+      "name": "AI表格 获取所有数据表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.sheet.update",
+        "baseId": "={{ $('AI表格 解析URL').item.json.baseId }}",
+        "sheetIdOrName": "={{ $json.id }}",
+        "name": "={{ $now.toMillis() }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -320
+      ],
+      "id": "e047bb52-b4fc-417f-88c7-e868deda0e09",
+      "name": "AI表格 更新数据表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.record.insert",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.sheetId }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "标题": "测试标题",
+            "多选": "['选项一', '选项二']"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "标题",
+              "displayName": "标题 (primaryDoc)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "测试",
+              "displayName": "测试 (number)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "number"
+            },
+            {
+              "id": "多选",
+              "displayName": "多选 (multipleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "array"
+            },
+            {
+              "id": "链接",
+              "displayName": "链接 (url)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "object"
+            },
+            {
+              "id": "地址",
+              "displayName": "地址 (address)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "图片",
+              "displayName": "图片 (attachment)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "object"
+            },
+            {
+              "id": "状态",
+              "displayName": "状态 (singleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "2025-09-30T06:00:03.565-04:00",
+              "displayName": "2025-09-30T06:00:03.565-04:00 (singleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        96
+      ],
+      "id": "1839b097-936d-41f6-b7d5-71e9e7eee16b",
+      "name": "AI表格 新增记录",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.record.delete",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+          "mode": "id"
+        },
+        "recordIds": "={{ $json.value[0].id }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        96
+      ],
+      "id": "569784c0-e5a7-4674-81eb-18be65592494",
+      "name": "AI表格 删除多行记录",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.record.get",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+          "mode": "id"
+        },
+        "recordId": "={{ $json.records[0].id }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        -64
+      ],
+      "id": "66a19403-38d3-4031-b922-388a3a76e1f9",
+      "name": "AI表格 获取记录",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI表格 - 数据表操作",
+        "height": 368,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -528
+      ],
+      "id": "6cf4cd40-a9ce-42ac-b9b5-ec72f8544ddf",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI表格 - 记录操作",
+        "height": 400,
+        "width": 1008,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -128
+      ],
+      "id": "7b1e57b1-bdbf-4348-9bfc-9e57db914268",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## AI表格 - 辅助工具\n通过[用户管理 查询用户详情]和[AI表格 解析URL]简化后续操作",
+        "height": 256,
+        "width": 368,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -96
+      ],
+      "id": "26c7c8aa-2d53-425f-9e53-8628f773481a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "resource": "auth",
+        "operation": "auth.token.get"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "b5f8997d-558e-4424-8c27-5a6baba93b87",
+      "name": "应用授权 获取当前应用的 Access Token",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.getAll",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.sheetId }}",
+          "mode": "id"
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        400
+      ],
+      "id": "1dec1c0e-e7dd-479c-8b56-b3241204cc65",
+      "name": "AI表格 获取所有字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.delete",
+        "baseId": "={{ $('AI表格 解析URL').item.json.baseId }}",
+        "sheetIdOrName": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+        "fieldIdOrName": "={{ $json.id }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        560
+      ],
+      "id": "c493ca08-75f5-4621-871a-89e2a0e7b332",
+      "name": "AI表格 删除字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI表格 - 字段操作",
+        "height": 416,
+        "width": 1008,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        304
+      ],
+      "id": "5e7d89a6-9340-49e2-bf89-4cedfca4a4b3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.update",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+          "mode": "id"
+        },
+        "fieldIdOrName": "={{ $json.name }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        560
+      ],
+      "id": "27b10063-eea2-4a18-a734-5858222a2f58",
+      "name": "AI表格 更新字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.field.create",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.sheetId }}",
+          "mode": "id"
+        },
+        "body": "={\n  \"name\": \"{{ $now.toMillis() }}\",\n  \"property\": {\n    \"choices\": [\n      {\n        \"name\": \"完成\"\n      },\n      {\n        \"name\": \"失败\"\n      }\n    ]\n  },\n  \"type\": \"singleSelect\"\n}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        560
+      ],
+      "id": "8f8a815d-7779-4ada-983e-d6c95a6c8417",
+      "name": "AI表格 创建字段",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.record.update",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $('AI表格 解析URL').item.json.sheetId }}",
+          "mode": "id"
+        },
+        "recordId": "={{ $json.value[0].id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "测试": 12,
+            "多选": " ['选项一']",
+            "标题": "={{ $now.toMillis() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "标题",
+              "displayName": "标题 (primaryDoc)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "测试",
+              "displayName": "测试 (number)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "number"
+            },
+            {
+              "id": "多选",
+              "displayName": "多选 (multipleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "array"
+            },
+            {
+              "id": "链接",
+              "displayName": "链接 (url)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "object"
+            },
+            {
+              "id": "地址",
+              "displayName": "地址 (address)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "图片",
+              "displayName": "图片 (attachment)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "object"
+            },
+            {
+              "id": "状态",
+              "displayName": "状态 (singleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "2025-09-30T06:00:03.565-04:00",
+              "displayName": "2025-09-30T06:00:03.565-04:00 (singleSelect)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": true,
+              "readOnly": false,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        96
+      ],
+      "id": "61b0574e-fc7c-4e4b-8e3f-911693eee37b",
+      "name": "AI表格 更新记录",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "notable",
+        "operation": "notable.record.getAll",
+        "baseId": {
+          "__rl": true,
+          "value": "={{ $json.baseId }}",
+          "mode": "id"
+        },
+        "sheetIdOrName": {
+          "__rl": true,
+          "value": "={{ $json.sheetId }}",
+          "mode": "id"
+        },
+        "filter": {
+          "conditions": [
+            {
+              "field": "多选",
+              "operator": "contain",
+              "value": "选项一,选项二"
+            }
+          ]
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -64
+      ],
+      "id": "5b3fe468-af13-44e8-bf95-499f92ce014a",
+      "name": "AI表格 列出多行记录",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "用户管理 查询用户详情",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "应用授权 获取当前应用的 Access Token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 解析URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 解析URL": {
+      "main": [
+        [
+          {
+            "node": "AI表格 新建数据表",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 新增记录",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 列出多行记录",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 获取所有字段",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 创建字段",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI表格 获取所有数据表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "用户管理 查询用户详情": {
+      "main": [
+        []
+      ]
+    },
+    "AI表格 删除数据表": {
+      "main": [
+        []
+      ]
+    },
+    "AI表格 新建数据表": {
+      "main": [
+        [
+          {
+            "node": "AI表格 更新数据表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 更新数据表": {
+      "main": [
+        [
+          {
+            "node": "AI表格 删除数据表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 新增记录": {
+      "main": [
+        [
+          {
+            "node": "AI表格 更新记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 获取记录": {
+      "main": [
+        []
+      ]
+    },
+    "AI表格 获取所有数据表": {
+      "main": [
+        [
+          {
+            "node": "AI表格 获取数据表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 获取数据表": {
+      "main": [
+        []
+      ]
+    },
+    "应用授权 获取当前应用的 Access Token": {
+      "main": [
+        []
+      ]
+    },
+    "AI表格 更新字段": {
+      "main": [
+        [
+          {
+            "node": "AI表格 删除字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 创建字段": {
+      "main": [
+        [
+          {
+            "node": "AI表格 更新字段",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 更新记录": {
+      "main": [
+        [
+          {
+            "node": "AI表格 删除多行记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI表格 列出多行记录": {
+      "main": [
+        [
+          {
+            "node": "AI表格 获取记录",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0e8cd040-0d88-4a79-b9a5-737594b65075",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
+  },
+  "id": "7yVJbBoo6hpytHUq",
+  "tags": []
+}
