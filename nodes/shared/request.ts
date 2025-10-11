@@ -1,5 +1,5 @@
 import type { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
-import type { IRequestOptions } from 'n8n-workflow/dist/Interfaces';
+import type { IHttpRequestOptions, IRequestOptions } from 'n8n-workflow/dist/Interfaces';
 
 type Ctx = IExecuteFunctions | ILoadOptionsFunctions;
 
@@ -37,6 +37,9 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
   const credentials = await (this as IExecuteFunctions).getCredentials('dingtalkApi');
 
   const url = normalizeUrl(options.url);
+  if (!url) {
+    throw new Error('Request options require a URL');
+  }
   // 相对地址自动补 baseURL
   const baseURL = options.baseURL ?? (isAbsoluteUrl(url) ? undefined : DEFAULT_BASE_URL);
 
@@ -69,10 +72,10 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
     body: mergedOptions.body,
   });
 
-  const resp = await this.helpers.requestWithAuthentication.call(
+  const resp = await this.helpers.httpRequestWithAuthentication.call(
     this,
     'dingtalkApi',
-    mergedOptions,
+    mergedOptions as IHttpRequestOptions,
     {
       // 用临时的"解密凭据覆盖"，让 accessToken 可被清空，从而触发 preAuthentication 重新取
       // @ts-expect-error n8n 内部允许这个第三参
