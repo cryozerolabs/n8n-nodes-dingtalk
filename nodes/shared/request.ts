@@ -16,20 +16,29 @@ function normalizeUrl(u?: string): string | undefined {
 }
 
 function looksLikeTokenProblem(body: unknown): boolean {
-  try {
-    const s = JSON.stringify(body ?? {}).toLowerCase();
-    // 常见提示: access_token is blank / invalid / expired / 不合法 等
-    return (
-      s.includes('access_token') &&
-      (s.includes('blank') ||
-        s.includes('invalid') ||
-        s.includes('expired') ||
-        s.includes('非法') ||
-        s.includes('不合法'))
-    );
-  } catch {
-    return false;
+  if (body === undefined || body === null) return false;
+
+  let serialized: string;
+  if (typeof body === 'string') {
+    serialized = body;
+  } else {
+    try {
+      serialized = JSON.stringify(body);
+    } catch {
+      return false;
+    }
   }
+
+  const s = serialized.toLowerCase();
+  // 常见提示: access_token is blank / invalid / expired / 不合法 等
+  return (
+    s.includes('access_token') &&
+    (s.includes('blank') ||
+      s.includes('invalid') ||
+      s.includes('expired') ||
+      s.includes('非法') ||
+      s.includes('不合法'))
+  );
 }
 
 async function originRequest(this: Ctx, options: IRequestOptions, clearAccessToken = false) {
@@ -70,6 +79,8 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
     headers: Object.keys(mergedOptions.headers),
     json: mergedOptions.json,
     body: mergedOptions.body,
+    accessToken: credentials.accessToken,
+    clearAccessToken,
   });
 
   const resp = await this.helpers.httpRequestWithAuthentication.call(
@@ -101,15 +112,21 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
 export async function request<T = unknown>(this: Ctx, options: IRequestOptions): Promise<T> {
   try {
     const data = await originRequest.call(this, options, false);
-    // 清空 token 触发 preAuthentication 重新获取，再试一次
     if (looksLikeTokenProblem(data)) {
+      // 清空 token 触发 preAuthentication 重新获取，再试一次
       const retry = await originRequest.call(this, options, true);
       return retry as T;
     }
     return data as T;
   } catch (err) {
-    const e = err as { statusCode?: number; response?: { statusCode?: number; body?: unknown } };
-    const maybeAuth = looksLikeTokenProblem(e.response?.body);
+    const e = err as {
+      context?: { data?: unknown };
+      description?: unknown;
+      message?: unknown;
+    };
+
+    const maybeAuth = looksLikeTokenProblem(e.context?.data ?? e.description ?? err);
+
     if (maybeAuth) {
       // 清空 token 触发 preAuthentication 重新获取，再试一次
       const retry = await originRequest.call(this, options, true);
