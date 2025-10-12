@@ -32,12 +32,13 @@ function looksLikeTokenProblem(body: unknown): boolean {
   const s = serialized.toLowerCase();
   // 常见提示: access_token is blank / invalid / expired / 不合法 等
   return (
-    s.includes('access_token') &&
-    (s.includes('blank') ||
-      s.includes('invalid') ||
-      s.includes('expired') ||
-      s.includes('非法') ||
-      s.includes('不合法'))
+    (s.includes('access_token') &&
+      (s.includes('blank') ||
+        s.includes('invalid') ||
+        s.includes('expired') ||
+        s.includes('非法') ||
+        s.includes('不合法'))) ||
+    s.includes('应用尚未开通所需的权限')
   );
 }
 

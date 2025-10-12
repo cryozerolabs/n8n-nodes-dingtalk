@@ -203,6 +203,8 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+### v0.3.4
+- 增强http请求，钉钉应用申请权限后，需要使用新的access_token才会生效，对于`应用尚未开通所需的权限：[XXX.XXX.XXX]`错误，尝试刷新access_token（即使用户没有去修改权限） 
 
 ### v0.3.3
 - 修复了AccessToken过期后无法自动刷新的问题
