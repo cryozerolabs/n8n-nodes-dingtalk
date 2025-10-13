@@ -67,18 +67,18 @@ export class DingtalkApi implements ICredentialType {
   async preAuthentication(this: IHttpRequestHelper, credentials: ICredentialDataDecryptedObject) {
     const res = await this.helpers.httpRequest({
       method: 'POST',
-      url: `https://api.dingtalk.com/v1.0/oauth2/${credentials.corpId}/token`,
+      url: `https://api.dingtalk.com/v1.0/oauth2/accessToken`,
       body: {
-        client_id: credentials.clientId,
-        client_secret: credentials.clientSecret,
-        grant_type: 'client_credentials',
+        appKey: credentials.clientId,
+        appSecret: credentials.clientSecret,
       },
     });
 
-    if (res.code || !res.access_token) {
+    const accessToken = res.accessToken || res.access_token;
+    if (res.code || !accessToken) {
       throw new Error(`授权失败: ${res.message}`);
     }
-    return { accessToken: res.access_token };
+    return { accessToken };
   }
 
   async authenticate(
@@ -116,12 +116,11 @@ export class DingtalkApi implements ICredentialType {
   test: ICredentialTestRequest = {
     request: {
       baseURL: 'https://api.dingtalk.com/v1.0',
-      url: '=/oauth2/{{$credentials.corpId}}/token',
+      url: '=/oauth2/accessToken',
       method: 'POST',
       body: {
-        client_id: '={{$credentials.clientId}}',
-        client_secret: '={{$credentials.clientSecret}}',
-        grant_type: 'client_credentials',
+        appKey: '={{$credentials.clientId}}',
+        appSecret: '={{$credentials.clientSecret}}',
       },
     },
   };
