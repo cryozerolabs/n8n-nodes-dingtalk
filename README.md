@@ -5,7 +5,7 @@
 
 这是一个钉钉（DingTalk）的 n8n 社区节点，让你可以在 n8n 工作流中集成钉钉开放平台的各种 API。
 
-钉钉是阿里巴巴集团打造的企业级智能移动办公平台，为全球企业组织提供一站式的数字化办公解决方案。本节点基于钉钉开放平台 API 开发，支持 AI 表格、用户管理、身份验证等核心功能。
+钉钉是阿里巴巴集团打造的企业级智能移动办公平台，为全球企业组织提供一站式的数字化办公解决方案。本节点基于钉钉开放平台 API 开发，支持 Stream模式监听事件订阅、AI 表格、用户管理、身份验证等核心功能。
 
 > ⚡ 使用教程、最佳实践等详尽说明请访问项目 Wiki：<https://github.com/cryozerolabs/n8n-nodes-dingtalk/wiki>
 
@@ -52,6 +52,12 @@
 
 ### 👥 用户管理 (User)
 - **获取用户详情** - 根据 userId 获取用户信息(unionId)
+- **根据手机号查询用户** - 根据手机号获取用户的userId
+- **搜索用户userId** - 获取指定用户的详细信息
+
+### ⚡️ 事件订阅
+![Stream Push](docs/images/stream-push-guide.png)
+- **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
 
 
 ## 🚀 安装指南
@@ -203,6 +209,11 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+## v0.4.0
+- 新增：根据手机号查询用户、搜索用户userId，简化用户获取unionId的步骤
+- 新增：⚡️Stream模式事件订阅触发器
+- 修改：凭证获取access_token使用企业内部api（钉钉新版本获取的统一access_token的api存在不兼容）
 
 ### v0.3.4
 - 增强http请求，钉钉应用申请权限后，需要使用新的access_token才会生效，对于`应用尚未开通所需的权限：[XXX.XXX.XXX]`错误，尝试刷新access_token（即使用户没有去修改权限） 
