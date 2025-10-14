@@ -281,7 +281,7 @@ cd n8n-nodes-dingtalk
 npm install
 
 # 3. 安装 n8n-node 开发工具（如果尚未安装）
-npm install -g n8n-node
+npm install --global @n8n/node-cli
 
 # 4. 构建项目
 n8n-node build
