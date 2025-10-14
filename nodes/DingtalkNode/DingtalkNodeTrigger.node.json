@@ -1,0 +1,21 @@
+{
+	"node": "@cryozerolabs/n8n-nodes-dingtalk",
+	"nodeVersion": "0.3.4",
+	"codexVersion": "0.3.4",
+	"categories": ["Productivity", "Communication"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file#-%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file"
+			},
+			{
+				"url": "https://open.dingtalk.com/document/development/develop-stream-mode-push-server"
+			}
+		]
+	}
+}

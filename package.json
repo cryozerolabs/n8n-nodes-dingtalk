@@ -42,7 +42,8 @@
       "dist/credentials/DingtalkApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/DingtalkNode/DingtalkNode.node.js"
+      "dist/nodes/DingtalkNode/DingtalkNode.node.js",
+      "dist/nodes/DingtalkNode/DingtalkNodeTrigger.node.js"
     ]
   },
   "devDependencies": {

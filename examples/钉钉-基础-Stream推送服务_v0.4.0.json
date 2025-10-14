@@ -1,0 +1,199 @@
+{
+  "name": "钉钉-基础-Stream推送服务_v0.4.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "CUSTOM.dingtalkNodeTrigger",
+      "typeVersion": 1,
+      "position": [
+        464,
+        192
+      ],
+      "id": "896ab3f2-ac77-4c6d-a1fe-eb105ee55572",
+      "name": "Dingtalk Node Trigger",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.headers.eventType }}",
+                    "rightValue": "todo_task_create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04f082ed-c8ae-45c3-87d1-71d964bb8deb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "待办创建"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "647a2767-37b5-478a-92f8-30e273c41eda",
+                    "leftValue": "={{ $json.headers.eventType }}",
+                    "rightValue": "bpms_instance_change",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "审批实例变更"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        704,
+        192
+      ],
+      "id": "04dcd132-f85b-4734-8b1c-2a9a08ff0adc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f7f20378-97b2-4c45-9737-dbb69e28c122",
+              "name": "事件类型",
+              "value": "={{ $json.headers.eventType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        96
+      ],
+      "id": "e78be50e-1c5b-48c0-b54b-8a069ee591a1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79638157-9d42-4ef8-b87a-ee79c17aacb4",
+              "name": "标题",
+              "value": "={{ $json.data.title }}",
+              "type": "string"
+            },
+            {
+              "id": "ba8e3593-db68-4264-84db-c70358ba0b08",
+              "name": "事件类型",
+              "value": "={{ $json.headers.eventType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        272
+      ],
+      "id": "d1e07b07-647e-436d-8a54-9c380f02b253",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "## 钉钉Stream推送服务\n### 配置节点\n1. 进入DingTalk Node选择Trigger：Stream模式事件订阅\n2. 点击Active Workflow\n### 钉钉应用配置\n1. 进入[钉钉开放平台] https://open-dev.dingtalk.com/\n2. 进入[应用开发] - [企业内部应用] - [事件订阅]\n3. 配置事件订阅\n  - 推送方式：Stream模式推送\n  - 点击完成接入，验证连接通道\n  - 点击保存\n  - 在下方事件订阅根据需求启用相关事件",
+        "height": 416,
+        "width": 1120,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        32
+      ],
+      "id": "eadf8bb9-99ab-4d98-8c1e-bc4b4fcaaa02",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dingtalk Node Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "885af3ec-ec8e-4909-806f-77b598c17d9f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
+  },
+  "id": "bxVWkyq4R59678zc",
+  "tags": []
+}
