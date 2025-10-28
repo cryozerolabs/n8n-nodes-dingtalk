@@ -1,7 +1,7 @@
 {
   "name": "@cryozerolabs/n8n-nodes-dingtalk",
   "version": "0.4.0",
-  "description": "Dingtalk(钉钉) nodes for n8n: Notable(AI表格)、User API、auto token refresh",
+  "description": "Dingtalk(钉钉) nodes for n8n: Stream(事件订阅)、Notable(AI表格)、User API、自定义机器人发送消息",
   "license": "MIT",
   "keywords": [
     "n8n-community-node-package",
@@ -9,12 +9,16 @@
     "n8n-nodes",
     "dingtalk",
     "钉钉",
+    "事件订阅",
+    "stream",
     "AI表格",
     "notable",
     "飞书",
     "workflow",
     "automation",
-    "Stream"
+    "robot",
+    "钉钉机器人",
+    "钉钉自定义机器人"
   ],
   "author": {
     "name": "williamsuen",
@@ -40,7 +44,8 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/DingtalkApi.credentials.js"
+      "dist/credentials/DingtalkApi.credentials.js",
+      "dist/credentials/DingtalkRobotApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/DingtalkNode/DingtalkNode.node.js",

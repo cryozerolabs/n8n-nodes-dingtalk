@@ -31,7 +31,6 @@ export function getCommaSeparatedValues(
   parameterName: string,
 ): string[] {
   const raw = ctx.getNodeParameter(parameterName, itemIndex) as string;
-  console.log(`raw: ${raw}`);
   return raw
     .trim()
     .split(/[\n,，]/)

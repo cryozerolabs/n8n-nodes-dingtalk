@@ -1,0 +1,477 @@
+{
+  "name": "钉钉-基础-机器人_v0.5.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        288
+      ],
+      "id": "9790d2f1-f7d6-47ba-89f6-46cfe3c9b80d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.ding.send",
+        "robotCode": "={{ $(\"config\").item.json.robotCode }}",
+        "receiverUserIdList": "={{ $(\"config\").item.json.receiverList.join() }}",
+        "content": "Hi, 这是 @cryozerolabs/n8n-nodes-dingtalk 的测试DING消息"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "fa1f5dc7-c919-4015-afcf-2f996e832a4c",
+      "name": "机器人 💎发送DING消息",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "operation": "user.getByMobile",
+        "mobile": "13000000000"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        64
+      ],
+      "id": "9aa4e3ab-faa3-4b02-9144-81296434f53e",
+      "name": "用户管理 根据手机号查询用户",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c9af6f6-58d3-485c-aba3-3bbb9293e13a",
+              "name": "receiverList",
+              "value": "[\"user123456\"]",
+              "type": "array"
+            },
+            {
+              "id": "b6dd8144-860b-44ab-9fea-4b3c8f30aced",
+              "name": "robotCode",
+              "value": "ding2mzsommsnfbjyzy0",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        288
+      ],
+      "id": "550c3c81-785a-4ef5-8df4-a00194042c4a",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.ding.recall",
+        "robotCode": "={{ $('config').item.json.robotCode }}",
+        "openDingId": "089C66250AA9D7BBC2B2D712E7D01114"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -48
+      ],
+      "id": "0d84ea46-d43b-4742-a7c8-6853bd194216",
+      "name": "机器人 💎撤回已经发送的DING消息",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 发送DING消息\n> 当前接口为钉钉专业版和钉钉专属版专享接口，仅限钉钉专业版和钉钉专属版客户使用",
+        "height": 448,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -128
+      ],
+      "id": "3acadaa7-e02a-4928-bc76-9ddae3ecfe44",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.ding.send",
+        "robotCode": "={{ $(\"config\").item.json.robotCode }}",
+        "remindType": 2,
+        "receiverUserIdList": "={{ $(\"config\").item.json.receiverList.join() }}",
+        "content": "Hi, 这是 @cryozerolabs/n8n-nodes-dingtalk 的测试DING消息"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        208,
+        96
+      ],
+      "id": "e0af0c36-cf08-42db-ac93-4dcec5f16f52",
+      "name": "机器人 💎发送DING消息-短信",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.ding.send",
+        "robotCode": "={{ $(\"config\").item.json.robotCode }}",
+        "remindType": 3,
+        "receiverUserIdList": "={{ $(\"config\").item.json.receiverList.join() }}",
+        "content": "Hi, 这是 @cryozerolabs/n8n-nodes-dingtalk 的测试DING消息"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        416,
+        96
+      ],
+      "id": "df9e0d6d-b329-4cd8-ba83-eb79894d4070",
+      "name": "机器人 💎发送DING消息-电话",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "msgtype": "link",
+        "title": "链接消息标题",
+        "text": "链接消息内容",
+        "messageUrl": "https://www.dingtalk.com",
+        "picUrl": "https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        240,
+        592
+      ],
+      "id": "d95712c4-fccb-4b89-981a-1a9fde3c4d50",
+      "name": "机器人 自定义机器人发送群消息-链接",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "content": "这是一条文本消息内容 @13000000000 @18666666666",
+        "atMobiles": "13000000000,18666666666",
+        "atUserIds": "="
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        32,
+        592
+      ],
+      "id": "fc55f87b-6478-4fe6-8ba6-a2473c3a89a9",
+      "name": "机器人 自定义机器人发送群消息-文本",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "msgtype": "markdown",
+        "title": "链接消息标题",
+        "text": "=# Markdown消息内容\n> @13000000000 @18666666666",
+        "atMobiles": "13000000000,18666666666"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        464,
+        592
+      ],
+      "id": "7307b721-9eda-4057-a07a-e32f91487b84",
+      "name": "机器人 自定义机器人发送群消息-Markdown",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "msgtype": "actionCard",
+        "title": "标题：ActionCard消息内容 - 整体跳转",
+        "text": "# ActionCard消息内容 - 整体跳转\n> @13000000000,@18666666666",
+        "singleTitle": "独立跳转按钮",
+        "singleURL": "https://www.dingtalk.com",
+        "atMobiles": "13000000000,18666666666"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        672,
+        592
+      ],
+      "id": "69810e8d-74db-4c01-a686-c05b0c34c121",
+      "name": "机器人 自定义机器人发送群消息-ActionCard整体",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "msgtype": "actionCard",
+        "title": "标题：ActionCard消息内容 - 独立跳转",
+        "text": "=# ActionCard消息内容 - 独立跳转\n> @13000000000,@18666666666",
+        "btns": "btns",
+        "buttons": {
+          "button": [
+            {
+              "title": "按钮1",
+              "actionURL": "https://www.dingtalk.com"
+            },
+            {
+              "title": "按钮2",
+              "actionURL": "https://www.dingtalk.com"
+            }
+          ]
+        },
+        "atMobiles": "13000000000,18666666666"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        880,
+        592
+      ],
+      "id": "6b3740ce-5c9e-474e-b429-e533f110fa8e",
+      "name": "机器人 自定义机器人发送群消息-ActionCard独立",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.send",
+        "msgtype": "feedCard",
+        "links": {
+          "link": [
+            {
+              "title": "FeedCard标题1",
+              "messageURL": "https://www.dingtalk.com",
+              "picURL": "https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png"
+            },
+            {
+              "title": "FeedCard标题2",
+              "messageURL": "https://www.dingtalk.com",
+              "picURL": "https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png"
+            }
+          ]
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        592
+      ],
+      "id": "266c4289-76bd-4de8-b252-3e15ae2f96d3",
+      "name": "机器人 自定义机器人发送群消息-FeedCard",
+      "credentials": {
+        "dingtalkRobotApi": {
+          "id": "LtJkfzoTh30p1eCz",
+          "name": "钉钉机器人 n8n连接器-测试群"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 自定义机器人发送群消息\n### 调用频率限制\n由于消息发送太频繁会严重影响群的使用体验，因此自定义机器人发送消息的频率限制如下：\n**每个机器人每分钟最多发送20条消息到群里，如果超过20条，会限流10分钟。**\n\n> 如果你有大量发消息的场景（譬如系统监控报警）可以将这些信息进行整合，通过markdown消息以摘要的形式发送到群里。",
+        "height": 432,
+        "width": 1424,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        368
+      ],
+      "id": "853e0bc1-5d73-48e7-be60-320c84228735",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "config": {
+      "main": [
+        [
+          {
+            "node": "机器人 💎发送DING消息",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "机器人 自定义机器人发送群消息-文本",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 💎发送DING消息": {
+      "main": [
+        [
+          {
+            "node": "机器人 💎撤回已经发送的DING消息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 💎撤回已经发送的DING消息": {
+      "main": [
+        []
+      ]
+    },
+    "用户管理 根据手机号查询用户": {
+      "main": [
+        []
+      ]
+    },
+    "机器人 自定义机器人发送群消息-文本": {
+      "main": [
+        [
+          {
+            "node": "机器人 自定义机器人发送群消息-链接",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 自定义机器人发送群消息-链接": {
+      "main": [
+        [
+          {
+            "node": "机器人 自定义机器人发送群消息-Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 自定义机器人发送群消息-Markdown": {
+      "main": [
+        [
+          {
+            "node": "机器人 自定义机器人发送群消息-ActionCard整体",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 自定义机器人发送群消息-ActionCard整体": {
+      "main": [
+        [
+          {
+            "node": "机器人 自定义机器人发送群消息-ActionCard独立",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "机器人 自定义机器人发送群消息-ActionCard独立": {
+      "main": [
+        [
+          {
+            "node": "机器人 自定义机器人发送群消息-FeedCard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "665819de-7377-4b99-a04e-9ab2ad470428",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
+  },
+  "id": "1eD2gQcrmnFtaFsH",
+  "tags": []
+}
