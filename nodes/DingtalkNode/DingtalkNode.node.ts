@@ -11,12 +11,21 @@ import {
 import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
 import authBundle from './resources/auth';
-import notableBundle from './resources/notable';
-import userBundle from './resources/user';
 import docBundle from './resources/doc';
+import notableBundle from './resources/notable';
+import robotBundle from './resources/robot';
+import userBundle from './resources/user';
+import workflowBundle from './resources/workflow';
 
 // 静态导入所有资源包
-const bundles: ResourceBundle[] = [authBundle, notableBundle, userBundle, docBundle];
+const bundles: ResourceBundle[] = [
+  authBundle,
+  docBundle,
+  notableBundle,
+  robotBundle,
+  userBundle,
+  workflowBundle,
+];
 
 // 资源去重校验
 const seen: Record<string, number> = {};
@@ -90,7 +99,26 @@ export class DingtalkNode implements INodeType {
     usableAsTool: true,
     inputs: [NodeConnectionType.Main],
     outputs: [NodeConnectionType.Main],
-    credentials: [{ name: 'dingtalkApi', required: true }],
+    credentials: [
+      {
+        name: 'dingtalkApi',
+        required: true,
+        displayOptions: {
+          hide: {
+            operation: ['robot.send', 'notable.parseUrl'],
+          },
+        },
+      },
+      {
+        name: 'dingtalkRobotApi',
+        required: true,
+        displayOptions: {
+          show: {
+            operation: ['robot.send'],
+          },
+        },
+      },
+    ],
     properties: [resourceProperty, ...resourceOperationProps, ...aggregatedParams],
   };
 

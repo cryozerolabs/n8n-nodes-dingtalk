@@ -2,6 +2,10 @@ import type { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
 import type { IHttpRequestOptions, IRequestOptions } from 'n8n-workflow/dist/Interfaces';
 
 type Ctx = IExecuteFunctions | ILoadOptionsFunctions;
+type RequestExtras = {
+  credentialType?: string;
+  supportsTokenRefresh?: boolean;
+};
 
 const DEFAULT_BASE_URL = 'https://api.dingtalk.com/v1.0';
 
@@ -42,9 +46,14 @@ function looksLikeTokenProblem(body: unknown): boolean {
   );
 }
 
-async function originRequest(this: Ctx, options: IRequestOptions, clearAccessToken = false) {
+async function originRequest(
+  this: Ctx,
+  options: IRequestOptions,
+  credentialType: string,
+  clearAccessToken = false,
+) {
   // 读取已保存的凭据，并可在本次请求"临时覆盖 accessToken"
-  const credentials = await (this as IExecuteFunctions).getCredentials('dingtalkApi');
+  const credentials = await (this as IExecuteFunctions).getCredentials(credentialType);
 
   const url = normalizeUrl(options.url);
   if (!url) {
@@ -86,7 +95,7 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
 
   const resp = await this.helpers.httpRequestWithAuthentication.call(
     this,
-    'dingtalkApi',
+    credentialType,
     mergedOptions as IHttpRequestOptions,
     {
       // 用临时的"解密凭据覆盖"，让 accessToken 可被清空，从而触发 preAuthentication 重新取
@@ -110,12 +119,19 @@ async function originRequest(this: Ctx, options: IRequestOptions, clearAccessTok
   return resp;
 }
 
-export async function request<T = unknown>(this: Ctx, options: IRequestOptions): Promise<T> {
+export async function request<T = unknown>(
+  this: Ctx,
+  options: IRequestOptions,
+  extras: RequestExtras = {},
+): Promise<T> {
+  const credentialType = extras.credentialType ?? 'dingtalkApi';
+  const supportsTokenRefresh = extras.supportsTokenRefresh ?? credentialType === 'dingtalkApi';
+
   try {
-    const data = await originRequest.call(this, options, false);
-    if (looksLikeTokenProblem(data)) {
+    const data = await originRequest.call(this, options, credentialType, false);
+    if (supportsTokenRefresh && looksLikeTokenProblem(data)) {
       // 清空 token 触发 preAuthentication 重新获取，再试一次
-      const retry = await originRequest.call(this, options, true);
+      const retry = await originRequest.call(this, options, credentialType, true);
       return retry as T;
     }
     return data as T;
@@ -128,9 +144,9 @@ export async function request<T = unknown>(this: Ctx, options: IRequestOptions):
 
     const maybeAuth = looksLikeTokenProblem(e.context?.data ?? e.description ?? err);
 
-    if (maybeAuth) {
+    if (supportsTokenRefresh && maybeAuth) {
       // 清空 token 触发 preAuthentication 重新获取，再试一次
-      const retry = await originRequest.call(this, options, true);
+      const retry = await originRequest.call(this, options, credentialType, true);
       return retry as T;
     }
     // 非鉴权问题直接抛出

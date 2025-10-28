@@ -284,18 +284,20 @@ npm install
 npm install --global @n8n/node-cli
 
 # 4. 构建项目
-n8n-node build
+npm run build
 
 # 5. 设置开发环境变量（可选，用于调试）
-export NODE_ENV=development
 export N8N_LOG_LEVEL=debug
 
 # 6. 启动 n8n 开发服务器（自动加载当前节点）
-n8n-node dev
+npm run dev
 
 # 7. 代码格式化和检查
 npm run format
 npm run lint
+
+# 8. 发布
+npm run release
 ```
 
 **开发提示：**
