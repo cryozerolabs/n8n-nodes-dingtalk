@@ -1,4 +1,5 @@
 import type {
+  IAuthenticate,
   ICredentialDataDecryptedObject,
   ICredentialType,
   IDataObject,
@@ -10,7 +11,7 @@ import { createHmac } from 'node:crypto';
 export class DingtalkRobotApi implements ICredentialType {
   name = 'dingtalkRobotApi';
 
-  displayName = '钉钉机器人 API';
+  displayName = 'DingTalk Robot API';
 
   icon = 'file:icon.png' as const;
 
@@ -45,27 +46,10 @@ export class DingtalkRobotApi implements ICredentialType {
     },
   ];
 
-  // async preAuthentication(this: IHttpRequestHelper, credentials: ICredentialDataDecryptedObject) {
-  //   const res = await this.helpers.httpRequest({
-  //     method: 'POST',
-  //     url: `https://api.dingtalk.com/v1.0/oauth2/accessToken`,
-  //     body: {
-  //       appKey: credentials.clientId,
-  //       appSecret: credentials.clientSecret,
-  //     },
-  //   });
-
-  //   const accessToken = res.accessToken || res.access_token;
-  //   if (res.code || !accessToken) {
-  //     throw new Error(`授权失败: ${res.message}`);
-  //   }
-  //   return { accessToken };
-  // }
-
-  async authenticate(
+  authenticate: IAuthenticate = async (
     credentials: ICredentialDataDecryptedObject,
     requestOptions: IHttpRequestOptions,
-  ): Promise<IHttpRequestOptions> {
+  ) => {
     const qs: IDataObject = {
       access_token: credentials.accessToken,
     };
@@ -89,8 +73,6 @@ export class DingtalkRobotApi implements ICredentialType {
       ...qs,
     };
 
-    console.log('requestOptions', JSON.stringify(requestOptions, null, 2));
-
     return requestOptions;
-  }
+  };
 }

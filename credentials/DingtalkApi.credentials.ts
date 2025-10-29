@@ -1,4 +1,5 @@
 import type {
+  IAuthenticate,
   ICredentialDataDecryptedObject,
   ICredentialTestRequest,
   ICredentialType,
@@ -81,10 +82,10 @@ export class DingtalkApi implements ICredentialType {
     return { accessToken };
   }
 
-  async authenticate(
+  authenticate: IAuthenticate = async (
     credentials: ICredentialDataDecryptedObject,
     requestOptions: IHttpRequestOptions,
-  ): Promise<IHttpRequestOptions> {
+  ) => {
     const baseURL = requestOptions.baseURL ?? '';
     const url = requestOptions.url ?? '';
     const full = url.startsWith('http') ? url : `${baseURL}${url}`;
@@ -111,7 +112,7 @@ export class DingtalkApi implements ICredentialType {
     // });
 
     return requestOptions;
-  }
+  };
 
   test: ICredentialTestRequest = {
     request: {
