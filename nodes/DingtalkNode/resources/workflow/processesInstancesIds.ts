@@ -51,7 +51,7 @@ const properties: INodeProperties[] = [
   }),
   {
     displayName: '流程实例状态',
-    name: 'statusList',
+    name: 'statuses',
     type: 'multiOptions',
     default: [],
     options: [
@@ -90,7 +90,7 @@ const op: OperationDef = {
     const processCode = this.getNodeParameter('processCode', itemIndex, undefined) as number;
     const startTime = this.getNodeParameter('startTime', itemIndex, undefined) as string;
     const endTime = this.getNodeParameter('endTime', itemIndex, undefined) as string;
-    const statusList = this.getNodeParameter('statusList', itemIndex, []) as string[];
+    const statuses = this.getNodeParameter('statuses', itemIndex, []) as string[];
     const maxResults = this.getNodeParameter('maxResults', itemIndex, 20) as number;
     const nextToken = this.getNodeParameter('nextToken', itemIndex, 0) as number;
     const userIds = getCommaSeparatedValues(this, itemIndex, 'userIds');
@@ -99,7 +99,7 @@ const op: OperationDef = {
       processCode,
       maxResults,
       nextToken,
-      ...(statusList?.length > 0 ? { startTime } : {}),
+      ...(statuses?.length > 0 ? { statuses } : {}),
       ...(userIds?.length > 0 ? { userIds } : {}),
     } as IDataObject;
 
