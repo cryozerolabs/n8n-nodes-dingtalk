@@ -233,9 +233,10 @@ const formProperties: INodeProperties[] = [
     name: 'buttons',
     type: 'fixedCollection',
     default: {},
+    placeholder: '添加按钮',
     typeOptions: {
-      multipleValues: true,
       multipleValueButtonText: '添加按钮',
+      multipleValues: true,
       sortable: true,
     },
     displayOptions: {
@@ -276,6 +277,7 @@ const formProperties: INodeProperties[] = [
     name: 'links',
     type: 'fixedCollection',
     default: {},
+    placeholder: '添加链接',
     typeOptions: {
       multipleValues: true,
       multipleValueButtonText: '添加链接',
