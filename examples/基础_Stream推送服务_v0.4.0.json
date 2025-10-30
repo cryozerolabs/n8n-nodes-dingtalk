@@ -1,5 +1,5 @@
 {
-  "name": "钉钉-基础-Stream推送服务_v0.4.0",
+  "name": "基础_Stream推送服务_v0.4.0",
   "nodes": [
     {
       "parameters": {},
@@ -195,5 +195,12 @@
     "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
   },
   "id": "bxVWkyq4R59678zc",
-  "tags": []
+  "tags": [
+    {
+      "createdAt": "2025-10-30T03:46:49.243Z",
+      "updatedAt": "2025-10-30T03:46:49.243Z",
+      "id": "0Ccmoxs6K6M8CvZt",
+      "name": "DingTalk Node"
+    }
+  ]
 }

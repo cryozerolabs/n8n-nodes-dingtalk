@@ -1,5 +1,5 @@
 {
-  "name": "报销流程提取发票信息进行校验并反馈",
+  "name": "案例_报销流程提取发票信息进行校验并反馈_v0.5.0",
   "nodes": [
     {
       "parameters": {
@@ -911,6 +911,7 @@
       "parameters": {
         "resource": "workflow",
         "operation": "workflow.processes.instanceIds",
+        "processCode": "1",
         "startTime": "2025-10-28T00:00:00",
         "statuses": [
           "RUNNING"
@@ -1188,7 +1189,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "badbef8d-3630-400c-ac32-885a1cef09f6",
+  "versionId": "9b97628e-afe3-4380-878a-e79f110d2dd1",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
@@ -1196,10 +1197,10 @@
   "id": "XDPCuQRomakt0aMn",
   "tags": [
     {
-      "name": "DingTalk Node",
-      "id": "0Ccmoxs6K6M8CvZt",
       "createdAt": "2025-10-30T03:46:49.243Z",
-      "updatedAt": "2025-10-30T03:46:49.243Z"
+      "updatedAt": "2025-10-30T03:46:49.243Z",
+      "id": "0Ccmoxs6K6M8CvZt",
+      "name": "DingTalk Node"
     }
   ]
 }

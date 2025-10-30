@@ -31,7 +31,6 @@ const formProperties: INodeProperties[] = [
     default: 'text',
     description:
       '自定义机器人可发送的消息类型参见<a href="https://open.dingtalk.com/document/dingstart/custom-bot-send-message-type#" target="_blank">自定义机器人发送消息的消息类型</a>。',
-    // eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
     options: [
       { name: '文本类型消息', value: 'text' },
       { name: '链接类型消息', value: 'link' },

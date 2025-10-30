@@ -63,7 +63,6 @@ const formProperties: INodeProperties[] = [
             name: 'attachment',
             description:
               '添加审批评论附件需将文件上传至审批钉盘空间，可以获取到接口参数spaceId，fileType，fileName，fileId，fileSize。<a href="https://open.dingtalk.com/document/development/obtains-the-information-about-approval-nail-disk" target="_blank">获取审批钉盘空间信息</a>',
-            // eslint-disable-next-line n8n-nodes-base/node-param-fixed-collection-type-unsorted-items
             values: [
               {
                 displayName: '钉盘空间ID',

@@ -20,6 +20,7 @@ const properties: INodeProperties[] = [
     default: '',
     required: true,
     description: '来自钉钉 AI 表格的分享或地址，例如 https://alidocs.dingtalk.com/i/nodes/...?',
+    placeholder: 'https://alidocs.dingtalk.com/i/nodes/...?',
     displayOptions: showOnly,
   },
 ];

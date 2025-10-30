@@ -88,7 +88,7 @@ export class DingtalkNode implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node',
     name: 'dingtalkNode',
-    // eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+
     icon: 'file:icon.png',
     group: ['transform'],
     version: 1,

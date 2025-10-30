@@ -34,7 +34,6 @@ const formProperties: INodeProperties[] = [
         name: 'conditions',
         values: [
           {
-            // eslint-disable-next-line n8n-nodes-base/node-param-display-name-wrong-for-dynamic-options
             displayName: '字段',
             name: 'field',
             type: 'options',
@@ -43,7 +42,6 @@ const formProperties: INodeProperties[] = [
               loadOptionsMethod: 'notableGetFieldsAndAddOptions',
             },
             default: '',
-            // eslint-disable-next-line n8n-nodes-base/node-param-description-wrong-for-dynamic-options
             description:
               '配置操作人、AI表格和数据表参数后，可从列表中选择最新支持的字段，或使用expression指定字段名称或ID',
           },
@@ -51,7 +49,6 @@ const formProperties: INodeProperties[] = [
             displayName: '条件类型',
             name: 'operator',
             type: 'options',
-            // eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
             options: [
               {
                 name: '等于',

@@ -111,9 +111,7 @@ async function originRequest(
 
   // 统一打点: 收到后
   this.logger?.debug?.('response (after)', {
-    url: options.url,
-    status: resp?.statusCode ?? resp?.status ?? 'ok',
-    tokenHint: looksLikeTokenProblem(resp),
+    response: resp,
   });
 
   return resp;
