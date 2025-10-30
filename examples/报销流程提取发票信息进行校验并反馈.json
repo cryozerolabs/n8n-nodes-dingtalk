@@ -1,0 +1,1205 @@
+{
+  "name": "报销流程提取发票信息进行校验并反馈",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "workflow",
+        "operation": "workflow.processes.instances.download",
+        "processInstanceId": "={{ $('审批上下文').item.json.审批实例ID }}",
+        "fileId": "={{ $json.fileId }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -608
+      ],
+      "id": "6f0262ad-981e-4045-9c0f-a45767e0f4d7",
+      "name": "OA审批 下载审批附件",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/***** 🔧 可修改的配置 *****/\nconst TABLE_NAME = '报销明细';                     // TableField 的 name\nconst ATT_LABEL_IN_ROW = '附件';                   // 行内“附件”字段的 label\n\n/***** 逻辑 *****/\nconst out = $input.all().map(({ json }) => {\n  const res = (json && json.result) || {};\n  const fcv = res.formComponentValues || [];\n\n  const tableNode = fcv.find(fc =>\n    fc.componentType === 'TableField' &&\n    (fc.name === TABLE_NAME)\n  );\n\n  let attachments = [];\n\n  if (tableNode && tableNode.value) {\n    // 钉钉 TableField.value 为 JSON 字符串\n    const rows = JSON.parse(tableNode.value || '[]');\n    for (const row of rows || []) {\n      const cells = Array.isArray(row.rowValue) ? row.rowValue : [];\n      const attCell = cells.find(v =>\n        v && (v.label === ATT_LABEL_IN_ROW)\n      );\n      if (attCell && Array.isArray(attCell.value)) {\n        attachments = attachments.concat(attCell.value); // 行内附件值为对象数组\n      }\n    }\n  }\n\n  return { json: { attachments } };\n});\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -160
+      ],
+      "id": "2c189156-6dff-40d2-a65a-ac80e20039a4",
+      "name": "从控件组中提取附件列表"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "attachments",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -608
+      ],
+      "id": "2c32e9dc-7067-47fa-8d24-4da4cf149af9",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "content": "## 示例：获取报销单，对附件中的发票ocr并校验报销金额\n### 流程实例\n1. 添加一张jpg发票、一个pdf发票\n### N8N工作流\n1. 通过触发器监听新发起的审批流\n2. 获取审批中的附件列表\n3. 使用AI对图片OCR提取发票信息\n4. 将结果反馈给审批流（评论、回写审批实例",
+        "height": 400,
+        "width": 992,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        -752
+      ],
+      "id": "0d7638a4-c46b-4b90-a628-a2df26415815",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "workflow",
+        "operation": "workflow.processes.instances",
+        "processInstanceId": "={{ $('审批上下文').item.json['审批实例ID'] }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -160
+      ],
+      "id": "920ddf21-41df-4a5d-aa23-d797059e9435",
+      "name": "OA审批 获取单个审批实例详情",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/***** 🔧 可修改的配置 *****/\nconst ROOT_ATTACHMENT_NAME = '附件';   // 根层附件控件的 name\n\n/***** 逻辑 *****/\nconst out = $input.all().map(({ json }) => {\n  const res = (json && json.result) || {};\n  const fcv = res.formComponentValues || [];\n\n  const node = fcv.find(fc =>\n    fc.componentType === 'DDAttachment' &&\n    (fc.name === ROOT_ATTACHMENT_NAME)\n  );\n\n  // 钉钉 DDAttachment.value 为 JSON 字符串\n  const attachments = node && node.value ? JSON.parse(node.value || '[]') : [];\n\n  return { json: { attachments } };\n});\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -304
+      ],
+      "id": "5b627f59-eeb2-4417-91a6-c81ee2ac31db",
+      "name": "从根层附件控件提取列表"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b80b7b2c-b0df-41b5-8c02-89ed718f5671",
+                    "leftValue": "={{ $('Split Out').item.json.fileType }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF格式"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Split Out').item.json.fileType }}",
+                    "rightValue": "^(?:jpg|jpeg|png|gif|bmp|webp|tif|tiff)$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    },
+                    "id": "d505d6fa-76af-4c45-8ab3-92028ee6847e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "图片格式"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        -608
+      ],
+      "id": "2474e87b-d946-4518-b3bf-5b7fcc040792",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "98849f5d-e189-4217-9156-f026740ae524",
+      "name": "Extract from File",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        720,
+        -736
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.result.downloadUri }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -736
+      ],
+      "id": "fb109bc0-5989-443e-9633-ef4bdafd86d9",
+      "name": "下载PDF"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        976,
+        -528
+      ],
+      "id": "669df023-bf95-4a87-91f0-b5ec2f66d5ff",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "Qwen/Qwen3-VL-8B-Instruct",
+          "mode": "id"
+        },
+        "text": "## 角色\n\n你是一个专业的“发票信息抽取器”。输入是一段发票文字（可能来自 OCR、邮件正文或聊天粘贴），输出是严格有效的 JSON，适合直接写入数据库/Google Sheets。\n\n## 任务\n从给定的发票文本中识别并抽取字段，返回单个 JSON 对象，放在一个标记代码块里（json ... ）。不要输出任何解释、注释或多余字符。\n\n## 输出要求\n\n仅输出一个 JSON 代码块，不得包含额外文字。\n\n不存在或不确定的值一律填 null。\n\n日期统一为 YYYY-MM-DD（ISO 8601）；\n\n金额/数量等数值字段用 数字类型（而非字符串），保留精度但不要添加货币符号或千分位。\n\n税率使用小数（例如 1% → 0.01），并同时提供显示字段（例如 \"1%\"）。\n\nitems 数组必须存在；若无行项目，输出空数组 []。\n\n## 字段定义（Schema）\n\n{\n  \"invoice\": {\n    \"title\": \"string|null\",\n    \"number\": \"string|null\",\n    \"issue_date\": \"YYYY-MM-DD|null\",\n    \"currency\": \"string|null\",\n    \"buyer\": {\n      \"name\": \"string|null\",\n      \"tax_id\": \"string|null\",\n      \"note\": \"string|null\"\n    },\n    \"seller\": {\n      \"name\": \"string|null\",\n      \"tax_id\": \"string|null\"\n    },\n    \"items\": [\n      {\n        \"name\": \"string|null\",\n        \"spec\": \"string|null\",\n        \"unit\": \"string|null\",\n        \"quantity\": \"number|null\",\n        \"unit_price\": \"number|null\",\n        \"amount_without_tax\": \"number|null\",\n        \"tax_rate\": \"number|null\",\n        \"tax_rate_display\": \"string|null\",\n        \"tax_amount\": \"number|null\"\n      }\n    ],\n    \"totals\": {\n      \"amount_without_tax\": \"number|null\",\n      \"tax_total\": \"number|null\",\n      \"amount_with_tax\": \"number|null\"\n    },\n    \"issuer\": \"string|null\"\n  }\n}",
+        "imageUrls": "={{ $json.result.downloadUri }}",
+        "options": {
+          "maxTokens": 256000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        560,
+        -512
+      ],
+      "id": "0419e059-4f48-43d1-b872-09f768f4c45c",
+      "name": "OCR",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "MTUSRCEVOUpFnWmZ",
+          "name": "硅基流动-YQ"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "tencent/Hunyuan-MT-7B",
+          "mode": "id"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=## 角色\n\n你是一个专业的“发票信息抽取器”。输入是一段发票文字（可能来自 OCR、邮件正文或聊天粘贴），输出是严格有效的 JSON，适合直接写入数据库/Google Sheets。\n\n## 任务\n从给定的发票文本中识别并抽取字段，返回单个 JSON 对象，放在一个标记代码块里（json ... ）。不要输出任何解释、注释或多余字符。\n\n## 输出要求\n\n仅输出一个 JSON 代码块，不得包含额外文字。\n\n不存在或不确定的值一律填 null。\n\n日期统一为 YYYY-MM-DD（ISO 8601）；\n\n金额/数量等数值字段用 数字类型（而非字符串），保留精度但不要添加货币符号或千分位。\n\n税率使用小数（例如 1% → 0.01），并同时提供显示字段（例如 \"1%\"）。\n\nitems 数组必须存在；若无行项目，输出空数组 []。\n\n## 字段定义（Schema）\n\n{\n  \"invoice\": {\n    \"title\": \"string|null\",\n    \"number\": \"string|null\",\n    \"issue_date\": \"YYYY-MM-DD|null\",\n    \"currency\": \"string|null\",\n    \"buyer\": {\n      \"name\": \"string|null\",\n      \"tax_id\": \"string|null\",\n      \"note\": \"string|null\"\n    },\n    \"seller\": {\n      \"name\": \"string|null\",\n      \"tax_id\": \"string|null\"\n    },\n    \"items\": [\n      {\n        \"name\": \"string|null\",\n        \"spec\": \"string|null\",\n        \"unit\": \"string|null\",\n        \"quantity\": \"number|null\",\n        \"unit_price\": \"number|null\",\n        \"amount_without_tax\": \"number|null\",\n        \"tax_rate\": \"number|null\",\n        \"tax_rate_display\": \"string|null\",\n        \"tax_amount\": \"number|null\"\n      }\n    ],\n    \"totals\": {\n      \"amount_without_tax\": \"number|null\",\n      \"tax_total\": \"number|null\",\n      \"amount_with_tax\": \"number|null\"\n    },\n    \"issuer\": \"string|null\"\n  }\n}\n\n## 文本\n{{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        864,
+        -736
+      ],
+      "id": "f2e76ee6-9e7c-4ba2-80a5-21f5677c4989",
+      "name": "PDF格式化",
+      "credentials": {
+        "openAiApi": {
+          "id": "MTUSRCEVOUpFnWmZ",
+          "name": "硅基流动-YQ"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1e2172a-9a9e-47cb-b875-774f7cc299a8",
+              "name": "content",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        -736
+      ],
+      "id": "d10a8140-2f89-44b7-8aaf-8343794e64da",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "/***** 工具函数 *****/\nfunction stripCodeFence(s) {\n  if (typeof s !== 'string') return s;\n  const m = s.match(/```json\\s*([\\s\\S]*?)```/i) || s.match(/```\\s*([\\s\\S]*?)```/i);\n  return m ? m[1].trim() : s.trim();\n}\nfunction toJson(payload) {\n  if (!payload) return null;\n  if (typeof payload === 'object') return payload;\n  const s = stripCodeFence(String(payload));\n  try { return JSON.parse(s); } catch { return null; }\n}\nfunction nvl(v){\n  if (v == null) return null;\n  const t = String(v).trim();\n  if (t === '' || /^null$/i.test(t) || t === '未提供') return null;\n  return v;\n}\nfunction num(v){\n  if (v == null || v === '') return null;\n  if (typeof v === 'number') return v;\n  const n = parseFloat(String(v).replace(/[^\\d.\\-]/g,''));\n  return Number.isFinite(n) ? n : null;\n}\nfunction normDate(s){\n  if(!s) return null;\n  const t = String(s).replace('年','-').replace('月','-').replace('日','');\n  const m = t.match(/(\\d{4})[-/.\\s](\\d{1,2})[-/.\\s](\\d{1,2})/);\n  if(!m) return null;\n  const [, y, mo, d] = m;\n  return `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;\n}\nfunction normCcy(s){\n  if(!s) return null;\n  const t = String(s).toUpperCase();\n  if (/[¥￥]|人民币|CNY/.test(t)) return 'CNY';\n  if (/USD|\\$|美元/.test(t)) return 'USD';\n  return null;\n}\n\n/***** 规范化单张发票结构 *****/\nfunction normalizeInvoice(raw){\n  if (!raw || !raw.invoice) return null;\n  const inv = raw.invoice;\n  const items = Array.isArray(inv.items) ? inv.items.map(it => ({\n    name: (nvl(it?.name) ?? null)?.replace(/^\\*+|\\*+$/g,'') || null,\n    spec: nvl(it?.spec) ?? null,\n    unit: nvl(it?.unit) ?? null,\n    quantity: num(it?.quantity),\n    unit_price: num(it?.unit_price),\n    amount_without_tax: num(it?.amount_without_tax),\n    tax_rate: (it?.tax_rate === 0) ? 0 : num(it?.tax_rate),\n    tax_rate_display: nvl(it?.tax_rate_display) ?? null,\n    tax_amount: num(it?.tax_amount),\n  })) : [];\n\n  return {\n    title: nvl(inv.title) ?? null,\n    number: nvl(inv.number) ?? null,\n    issue_date: normDate(inv.issue_date),\n    currency: normCcy(inv.currency),\n    buyer: { name: nvl(inv?.buyer?.name) ?? null, tax_id: nvl(inv?.buyer?.tax_id) ?? null, note: nvl(inv?.buyer?.note) ?? null },\n    seller: { name: nvl(inv?.seller?.name) ?? null, tax_id: nvl(inv?.seller?.tax_id) ?? null },\n    items,\n    totals: {\n      amount_without_tax: num(inv?.totals?.amount_without_tax),\n      tax_total: num(inv?.totals?.tax_total),\n      amount_with_tax: num(inv?.totals?.amount_with_tax),\n    },\n    issuer: nvl(inv.issuer) ?? null,\n  };\n}\n\n/***** 主体：读取 Merge 输出的所有 item，并汇总 *****/\nconst invoices = [];\nconst errors = [];\n\nfor (const it of $input.all()) {\n  const content = it.json?.content ?? it.json; // 你的示例里数据在 json.content\n  const parsed = toJson(content);\n  const normalized = normalizeInvoice(parsed);\n  if (normalized) invoices.push(normalized);\n  else errors.push({ reason: 'PARSE_FAIL_OR_NO_INVOICE', rawSnippet: String(content).slice(0, 200) });\n}\n\n/***** 生成一个简单汇总 *****/\nconst summary = invoices.reduce((acc, inv) => {\n  acc.count += 1;\n  acc.amount_without_tax = +( (acc.amount_without_tax ?? 0) + (inv.totals.amount_without_tax ?? 0) ).toFixed(2);\n  acc.tax_total         = +( (acc.tax_total ?? 0)         + (inv.totals.tax_total ?? 0) ).toFixed(2);\n  acc.amount_with_tax   = +( (acc.amount_with_tax ?? 0)   + (inv.totals.amount_with_tax ?? 0) ).toFixed(2);\n  return acc;\n}, { count: 0, amount_without_tax: 0, tax_total: 0, amount_with_tax: 0 });\n\nreturn [{ json: { invoices, summary, errors } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -528
+      ],
+      "id": "302f4f02-bb78-4a17-a983-bbb4a051a165",
+      "name": "汇总发票信息"
+    },
+    {
+      "parameters": {
+        "content": "## 3. 解析附件中的发票信息\n1. 如果是pdf，提取文字，让ai处理格式化成json\n2. 如果是图片，则使用ocr提取成json\n3. 最后，再汇总所有的结果",
+        "height": 400,
+        "width": 1312,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -752
+      ],
+      "id": "56b2e18b-3110-4832-8aa7-9264abfd11a8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## TODO\n- 记录发票使用次数\n- 调用api进行发票验真",
+        "height": 624,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -336
+      ],
+      "id": "6c6f369d-84fa-48ef-a9e7-cc9aa31193ba",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 依赖节点\nconst formItem = $(\"OA审批 获取单个审批实例详情\").first();\nconst aggItem  = $(\"汇总发票信息\").first();\n\nconst form = formItem?.json?.result || {};\nconst agg  = aggItem?.json || {};\nconst invoices = Array.isArray(agg.invoices) ? agg.invoices : [];\nconst summary  = agg.summary || {};\n\n// 取表单字段\nconst fcv = form.formComponentValues || [];\nconst getByName = (name) => (fcv.find(x => x.name === name) || {}).value || null;\n\nconst formTotalStr  = getByName('报销总额（元）') || '0';\nconst recordTimeStr = getByName('入账时间'); // 如 \"2025-10-28 15:29\"\n\n// 工具\nconst toNum = (v) => {\n  if (v == null || v === '') return 0;\n  if (typeof v === 'number') return v;\n  const n = parseFloat(String(v).replace(/[^\\d.\\-]/g,''));\n  return Number.isFinite(n) ? n : 0;\n};\nfunction parseDateOnly(s) {\n  if (!s) return null;\n  const t = String(s).trim().replace('年','-').replace('月','-').replace('日','');\n  const m = t.match(/(\\d{4})[-/.\\s](\\d{1,2})[-/.\\s](\\d{1,2})/);\n  if (!m) return null;\n  const [, y, mo, d] = m;\n  return new Date(`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}T00:00:00Z`);\n}\n\n// === 校验 A：发票合计必须 ≥ 报销总额（容差 0.01）===\nconst tol = 0.01;\nconst formTotal    = toNum(formTotalStr);\nconst invoiceTotal = toNum(summary.amount_with_tax);\nconst amountPass   = (invoiceTotal + tol) >= formTotal;\nconst shortfall    = Math.max(0, +(formTotal - invoiceTotal).toFixed(2)); // 发票少了多少（仅用于提示）\n\n// === 校验 B：开票日期 ≤ 入账日期 ===\nconst recordDate = parseDateOnly(recordTimeStr);\nlet datePass = true;\nconst lateList = [];\nif (recordDate) {\n  for (const inv of invoices) {\n    const d = parseDateOnly(inv?.issue_date);\n    if (!d) continue;\n    if (d.getTime() > recordDate.getTime()) {\n      datePass = false;\n      lateList.push(`${inv?.number || '未知票号'}(${inv?.issue_date || '无日期'})`);\n    }\n  }\n} else {\n  datePass = false;\n}\n\n// === 组装输出 ===\nconst reasons = [];\nif (!amountPass) reasons.push(`发票合计小于报销总额，差额¥${shortfall.toFixed(2)}`);\nif (!datePass) {\n  if (!recordDate) reasons.push('缺少入账时间');\n  else reasons.push(`存在发票开票日期晚于入账时间：${lateList.join('、')}`);\n}\n\nconst pass = reasons.length === 0;\nconst message = pass ? '校验通过' : `不通过：${reasons.join('；')}`;\n\nreturn [{ json: { pass, message } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -224
+      ],
+      "id": "53ff18f2-a5a0-45f3-baad-013529689475",
+      "name": "对比报销总额"
+    },
+    {
+      "parameters": {
+        "resource": "workflow",
+        "operation": "workflow.processes.instancesUpdate",
+        "opUserId": "={{ $('审批上下文').first().json['操作用户'] }}",
+        "processCode": "={{ $('审批上下文').item.json['审批流的唯一码'] }}",
+        "processInstanceId": "={{ $('审批上下文').item.json['审批实例ID'] }}",
+        "variables": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TextareaField_Y37FR13HQV40": "{{ $json.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "OpenDataField_DNYN0JH6CQO0",
+              "displayName": "DDBizSuite / 关联申请单 (relationCost)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TableField_19H82SZV4XVK0",
+              "displayName": "DDBizSuite / 行程 (addTravelDetail)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "OpenDataField_1EDJ5Z9QVY680",
+              "displayName": "DDBizSuite / 关联外出单 (relationOuting)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "OpenDataField_3SGL04MD9IO0",
+              "displayName": "DDBizSuite / 关联备用金 (relationReserve)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TableField_X8UL2UZUMHC0",
+              "displayName": "DDBizSuite / 报销明细 (addReimbursementDetail)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TableField_AOAI6W2ICQO0",
+              "displayName": "DDBizSuite / 收款金额合计 (mergePaymentDetail)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TableField_U5TC9PLF7OW0",
+              "displayName": "DDBizSuite / 公司支付 (companyPayDetail)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "MoneyField_41MTXVWS4KA0",
+              "displayName": "DDBizSuite / 报销总额（元） (totalReimbursementMoney)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "MoneyField_SI96SIMNSS00",
+              "displayName": "DDBizSuite / 备用金核销金额（元） (reserveTotalAmount)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "MoneyField_1Q42RS21U6PS0",
+              "displayName": "DDBizSuite / 支付金额（元） (excessAmount)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "MoneyField_ANZVD2X34KC0",
+              "displayName": "DDBizSuite / 公司支付（元） (companyAmount)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "InvoiceField_1DIG7YMG9STC0",
+              "displayName": "DDBizSuite / 发票 (electronicInvoiceOut)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "InnerContactField_3GB7FEBZOE00",
+              "displayName": "DDBizSuite / 归属人 (principal)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DepartmentField_PEGH0CX81XC0",
+              "displayName": "DDBizSuite / 归属部门 (recordDept)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TextareaField_Y37FR13HQV40",
+              "displayName": "DDBizSuite / 备注 (remark)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "DDSelectField_1XZLQWFSYXKW0",
+              "displayName": "DDBizSuite / 项目 (project)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDSelectField_MKEADHFVJO00",
+              "displayName": "DDBizSuite / 客户 (customer)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDSelectField_110AX0A6KQV40",
+              "displayName": "DDBizSuite / 供应商 (supplier)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "RecipientAccountField_1W9VIH14Q1UO0",
+              "displayName": "DDBizSuite / 收款账户 (recipientAccount)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDSelectField_TM28EZM4CTC0",
+              "displayName": "DDBizSuite / 商品 (product)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDSelectField_17EEOYUNMG3G0",
+              "displayName": "DDBizSuite / 企业付款账户 (paymentAccount)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDSelectField_13IGHJNQCJPC0",
+              "displayName": "DDBizSuite / 企业主体 (company)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDDateField_IPVA75JDMHS0",
+              "displayName": "DDBizSuite / 入账时间 (recordTime)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDDateField_OZYT60X74800",
+              "displayName": "DDBizSuite / 付款时间 (payTime)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "TextareaField_1GS86GTIT2LC0",
+              "displayName": "DDBizSuite / 费控信息 (costControlServerInfo)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DDAttachment_2UM7F78HFLW",
+              "displayName": "附件",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "readOnly": false,
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        480,
+        96
+      ],
+      "id": "0d82f9b0-6fd4-4777-83c3-297ad6c6f6eb",
+      "name": "OA审批 💎更新流程表单审批实例",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.ding.send",
+        "robotCode": "={{ $('审批上下文').first().json['DING消息机器人ID'] }}",
+        "receiverUserIdList": "={{ $('审批上下文').first().json['DING消息机器人ID'] }}",
+        "content": "={{ $json.message }}"
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        672,
+        96
+      ],
+      "id": "1da03fd2-b240-46f0-af8e-485c56daf6f8",
+      "name": "机器人 💎发送DING消息",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "6w8TqIIZvZOYMBwM",
+          "name": "Dingtalk-VmaxAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 4. 验证发票信息并反馈\n1. 通过Code将预期需要验证的发票、审批单据进行对比，验证\n2. 将验证结果反馈给钉钉",
+        "height": 272,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -336
+      ],
+      "id": "13b2ab3a-1270-49d2-bd83-c9f3bc98a278",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 对于钉钉专业版用户\n- 可以留一个字段让n8n处理完后填写\n- 那么财务看到这个字段后，就知道发票是否处理好了，从而增加效率",
+        "height": 320,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "e428963d-b059-41cd-b9fa-19e3263cb0a3",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "resource": "workflow",
+        "operation": "workflow.processes.instancesComments",
+        "processInstanceId": "={{ $('审批上下文').first().json['审批实例ID'] }}",
+        "text": "={{ $json.message }}",
+        "commentUserId": "={{ $('审批上下文').first().json['操作用户'] }}",
+        "file": {}
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -224
+      ],
+      "id": "a4d83d5e-9ad9-43f4-a0ef-ba2206042c4e",
+      "name": "OA审批 审批评论：验证结果",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.resource }}",
+                    "rightValue": "/v1.0/event/bpms_instance_change/bizCategoryId/dingtalk.businessFinance.reimbursement/processCode/PROC-F805E01A-2C4C-476B-B1EB-F34FAC5D3BBA/type/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fc30c001-e22b-4b05-9816-8ec9f2a14308"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI报销发起"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -784,
+        -160
+      ],
+      "id": "5393937f-3440-4d37-bae5-c31b41cd8ed0",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "content": "## 1. 使用触发器接收指定的事件\n- 不同场景可以创建不同的内部应用来实现\n- 在内部应用的事件订阅里面，配置好对应的订阅内容",
+        "height": 352,
+        "width": 368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        -336
+      ],
+      "id": "b6770174-ab79-4e5f-a997-30d9751ea560",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "CUSTOM.dingtalkNodeTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -160
+      ],
+      "id": "7d3ca605-0329-4cd4-88e8-4c6a12ec216f",
+      "name": "Dingtalk Node Trigger",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 2. 获取审批详情，提取附件列表",
+        "height": 352,
+        "width": 608,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -336
+      ],
+      "id": "c60fcac1-735d-46b7-ad77-a8418586d452",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2833e808-fc59-4873-828d-f96c9336895f",
+              "name": "=审批实例ID",
+              "value": "={{ $json.data.processInstanceId }}",
+              "type": "string"
+            },
+            {
+              "id": "b5c1741f-f174-4c08-9b34-76d8e763a7a0",
+              "name": "操作用户",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c5949095-1a14-41a5-9739-c084d0b59de1",
+              "name": "审批流的唯一码",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "71a45c3d-c3af-49e5-9d36-76d98049a4a9",
+              "name": "DING消息机器人ID",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        -160
+      ],
+      "id": "a4969b0d-1e3e-4841-9773-e841901a0e94",
+      "name": "审批上下文"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        96
+      ],
+      "id": "27ae1ab9-3a80-4f72-9a2c-91cfa7268f2b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## 测试用，指定审批实例",
+        "height": 256,
+        "width": 992,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        32
+      ],
+      "id": "baa342fd-a1c3-4ccf-860f-34bee9e0f564",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "resource": "workflow",
+        "operation": "workflow.processes.instanceIds",
+        "startTime": "2025-10-28T00:00:00",
+        "statuses": [
+          "RUNNING"
+        ]
+      },
+      "type": "CUSTOM.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        96
+      ],
+      "id": "e8498071-0443-4a97-94b4-def5bb4be2d9",
+      "name": "OA审批 获取审批实例ID列表",
+      "credentials": {
+        "dingtalkApi": {
+          "id": "mEh0ffWLDuvnPoI3",
+          "name": "Dingtalk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "74fad95f-91ff-4c83-88b2-71c3d923284c",
+              "name": "data.processInstanceId",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        96
+      ],
+      "id": "b95a02fa-ad26-4df4-bf15-5dc1fbe67476",
+      "name": "测试参数"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "从控件组中提取附件列表": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "OA审批 下载审批附件",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OA审批 下载审批附件": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OA审批 获取单个审批实例详情": {
+      "main": [
+        [
+          {
+            "node": "从控件组中提取附件列表",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "从根层附件控件提取列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "下载PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下载PDF": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "PDF格式化",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OCR": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "PDF格式化": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "汇总发票信息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "汇总发票信息": {
+      "main": [
+        [
+          {
+            "node": "对比报销总额",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "对比报销总额": {
+      "main": [
+        [
+          {
+            "node": "OA审批 审批评论：验证结果",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "OA审批 💎更新流程表单审批实例",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OA审批 💎更新流程表单审批实例": {
+      "main": [
+        [
+          {
+            "node": "机器人 💎发送DING消息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "审批上下文",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dingtalk Node Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "审批上下文": {
+      "main": [
+        [
+          {
+            "node": "OA审批 获取单个审批实例详情",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "测试参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "测试参数": {
+      "main": [
+        [
+          {
+            "node": "审批上下文",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "badbef8d-3630-400c-ac32-885a1cef09f6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
+  },
+  "id": "XDPCuQRomakt0aMn",
+  "tags": [
+    {
+      "name": "DingTalk Node",
+      "id": "0Ccmoxs6K6M8CvZt",
+      "createdAt": "2025-10-30T03:46:49.243Z",
+      "updatedAt": "2025-10-30T03:46:49.243Z"
+    }
+  ]
+}
