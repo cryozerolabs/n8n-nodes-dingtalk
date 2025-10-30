@@ -13,7 +13,6 @@ const overrideOperatorProperty: INodeProperties = {
   name: 'overrideOperator',
   type: 'boolean',
   default: false,
-  // eslint-disable-next-line n8n-nodes-base/node-param-description-boolean-without-whether
   description: '不使用凭证中的操作人，手动设置操作人unionId',
 };
 

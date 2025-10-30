@@ -14,5 +14,8 @@ export default [
         },
       },
     },
+    rules: {
+      'n8n-nodes-base/node-param-description-boolean-without-whether': 'off',
+    },
   },
 ];

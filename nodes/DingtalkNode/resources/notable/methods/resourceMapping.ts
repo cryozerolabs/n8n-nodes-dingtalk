@@ -34,7 +34,7 @@ export async function notableGetColumns(
         date: 'dateTime',
         user: 'object',
         department: 'object',
-        attachment: 'object',
+        attachment: 'array',
         unidirectionalLink: 'object',
         bidirectionalLink: 'object',
         url: 'object',
