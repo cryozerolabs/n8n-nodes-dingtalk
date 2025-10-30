@@ -1,5 +1,5 @@
 {
-  "name": "钉钉-基础-AI表格操作_v0.2.0",
+  "name": "基础_AI表格操作_v0.2.0",
   "nodes": [
     {
       "parameters": {},
@@ -933,5 +933,12 @@
     "instanceId": "38ac5f15d75e255b7f08c1c3e5483b90223067a13ec0074703142631d825e0fe"
   },
   "id": "7yVJbBoo6hpytHUq",
-  "tags": []
+  "tags": [
+    {
+      "createdAt": "2025-10-30T03:46:49.243Z",
+      "updatedAt": "2025-10-30T03:46:49.243Z",
+      "id": "0Ccmoxs6K6M8CvZt",
+      "name": "DingTalk Node"
+    }
+  ]
 }

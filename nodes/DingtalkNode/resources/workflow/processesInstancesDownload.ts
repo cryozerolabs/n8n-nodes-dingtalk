@@ -33,7 +33,6 @@ const properties: INodeProperties[] = [
     name: 'withCommentAttatchment',
     type: 'boolean',
     default: false,
-    // eslint-disable-next-line n8n-nodes-base/node-param-description-boolean-without-whether
     description: '默认忽略评论中附件',
     displayOptions: showOnly,
   },

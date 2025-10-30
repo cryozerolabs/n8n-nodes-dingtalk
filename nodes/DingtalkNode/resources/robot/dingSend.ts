@@ -57,7 +57,6 @@ const formProperties: INodeProperties[] = [
     name: 'callVoice',
     type: 'options',
     default: 'Standard_Female_Voice',
-    // eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
     options: [
       { name: '标准女性音色', value: 'Standard_Female_Voice' },
       { name: '粤语女性音色', value: 'Cantonese_Female_Voice' },

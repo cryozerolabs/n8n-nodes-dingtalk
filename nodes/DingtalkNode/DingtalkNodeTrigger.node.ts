@@ -33,7 +33,6 @@ export class DingtalkNodeTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node Trigger',
     name: 'dingtalkNodeTrigger',
-    // eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
     icon: 'file:icon.png',
     group: ['trigger'],
     version: 1,
