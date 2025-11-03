@@ -8,20 +8,14 @@
         "processInstanceId": "={{ $('审批上下文').item.json.审批实例ID }}",
         "fileId": "={{ $json.fileId }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         224,
         -608
       ],
       "id": "6f0262ad-981e-4045-9c0f-a45767e0f4d7",
-      "name": "OA审批 下载审批附件",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "OA审批 下载审批附件"
     },
     {
       "parameters": {
@@ -72,7 +66,7 @@
         "operation": "workflow.processes.instances",
         "processInstanceId": "={{ $('审批上下文').item.json['审批实例ID'] }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         -368,
@@ -81,13 +75,7 @@
       "id": "920ddf21-41df-4a5d-aa23-d797059e9435",
       "name": "OA审批 获取单个审批实例详情",
       "alwaysOutputData": false,
-      "retryOnFail": false,
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -233,13 +221,7 @@
       "retryOnFail": false,
       "executeOnce": false,
       "alwaysOutputData": false,
-      "notesInFlow": false,
-      "credentials": {
-        "openAiApi": {
-          "id": "MTUSRCEVOUpFnWmZ",
-          "name": "硅基流动-YQ"
-        }
-      }
+      "notesInFlow": false
     },
     {
       "parameters": {
@@ -264,13 +246,7 @@
         -736
       ],
       "id": "f2e76ee6-9e7c-4ba2-80a5-21f5677c4989",
-      "name": "PDF格式化",
-      "credentials": {
-        "openAiApi": {
-          "id": "MTUSRCEVOUpFnWmZ",
-          "name": "硅基流动-YQ"
-        }
-      }
+      "name": "PDF格式化"
     },
     {
       "parameters": {
@@ -657,20 +633,14 @@
           "convertFieldsToString": false
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         480,
         96
       ],
       "id": "0d82f9b0-6fd4-4777-83c3-297ad6c6f6eb",
-      "name": "OA审批 💎更新流程表单审批实例",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "OA审批 💎更新流程表单审批实例"
     },
     {
       "parameters": {
@@ -680,20 +650,14 @@
         "receiverUserIdList": "={{ $('审批上下文').first().json['DING消息机器人ID'] }}",
         "content": "={{ $json.message }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         672,
         96
       ],
       "id": "1da03fd2-b240-46f0-af8e-485c56daf6f8",
-      "name": "机器人 💎发送DING消息",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "6w8TqIIZvZOYMBwM",
-          "name": "Dingtalk-VmaxAI"
-        }
-      }
+      "name": "机器人 💎发送DING消息"
     },
     {
       "parameters": {
@@ -734,20 +698,14 @@
         "commentUserId": "={{ $('审批上下文').first().json['操作用户'] }}",
         "file": {}
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         672,
         -224
       ],
       "id": "a4d83d5e-9ad9-43f4-a0ef-ba2206042c4e",
-      "name": "OA审批 审批评论：验证结果",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "OA审批 审批评论：验证结果"
     },
     {
       "parameters": {
@@ -808,20 +766,14 @@
     },
     {
       "parameters": {},
-      "type": "CUSTOM.dingtalkNodeTrigger",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNodeTrigger",
       "typeVersion": 1,
       "position": [
         -960,
         -160
       ],
       "id": "7d3ca605-0329-4cd4-88e8-4c6a12ec216f",
-      "name": "Dingtalk Node Trigger",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "Dingtalk Node Trigger"
     },
     {
       "parameters": {
@@ -917,20 +869,14 @@
           "RUNNING"
         ]
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         -576,
         96
       ],
       "id": "e8498071-0443-4a97-94b4-def5bb4be2d9",
-      "name": "OA审批 获取审批实例ID列表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "OA审批 获取审批实例ID列表"
     },
     {
       "parameters": {

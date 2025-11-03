@@ -23,20 +23,14 @@
         },
         "name": "={{ $now.toMillis() }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         -320
       ],
       "id": "4089f173-01ff-4c40-890b-f5c76936ad8a",
-      "name": "AI表格 新建数据表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 新建数据表"
     },
     {
       "parameters": {
@@ -44,20 +38,14 @@
         "operation": "notable.parseUrl",
         "url": "https://alidocs.dingtalk.com/i/nodes/baseId?iframeQuery=entrance%3Ddata%26sheetId%3DsheetId%26source%3Dnotable_portal%26viewId%3DviewId&sideCollapsed=true"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         720,
         0
       ],
       "id": "f2324e56-800e-4156-8cee-f10b0410bbbf",
-      "name": "AI表格 解析URL",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 解析URL"
     },
     {
       "parameters": {
@@ -74,20 +62,14 @@
           "mode": "id"
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1520,
         -464
       ],
       "id": "d8541334-caaf-493e-934d-e208f6e55eeb",
-      "name": "AI表格 获取数据表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 获取数据表"
     },
     {
       "parameters": {
@@ -95,20 +77,14 @@
         "operation": "user.get",
         "userId": "0160621554-1383491704"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         528,
         432
       ],
       "id": "e076b65b-461c-4249-b833-0f4a832fee1f",
-      "name": "用户管理 查询用户详情",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "用户管理 查询用户详情"
     },
     {
       "parameters": {
@@ -125,20 +101,14 @@
           "mode": "id"
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1824,
         -320
       ],
       "id": "35725a2e-38a9-41c7-bc05-20248a5661cc",
-      "name": "AI表格 删除数据表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 删除数据表"
     },
     {
       "parameters": {
@@ -150,20 +120,14 @@
           "mode": "id"
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         -464
       ],
       "id": "ff19f879-f767-4b4b-b3db-9d2030255bb8",
-      "name": "AI表格 获取所有数据表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 获取所有数据表"
     },
     {
       "parameters": {
@@ -173,20 +137,14 @@
         "sheetIdOrName": "={{ $json.id }}",
         "name": "={{ $now.toMillis() }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1520,
         -320
       ],
       "id": "e047bb52-b4fc-417f-88c7-e868deda0e09",
-      "name": "AI表格 更新数据表",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 更新数据表"
     },
     {
       "parameters": {
@@ -303,20 +261,14 @@
           "convertFieldsToString": false
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         96
       ],
       "id": "1839b097-936d-41f6-b7d5-71e9e7eee16b",
-      "name": "AI表格 新增记录",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 新增记录"
     },
     {
       "parameters": {
@@ -334,20 +286,14 @@
         },
         "recordIds": "={{ $json.value[0].id }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1824,
         96
       ],
       "id": "569784c0-e5a7-4674-81eb-18be65592494",
-      "name": "AI表格 删除多行记录",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 删除多行记录"
     },
     {
       "parameters": {
@@ -365,20 +311,14 @@
         },
         "recordId": "={{ $json.records[0].id }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1536,
         -64
       ],
       "id": "66a19403-38d3-4031-b922-388a3a76e1f9",
-      "name": "AI表格 获取记录",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 获取记录"
     },
     {
       "parameters": {
@@ -432,20 +372,14 @@
         "resource": "auth",
         "operation": "auth.token.get"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         528,
         240
       ],
       "id": "b5f8997d-558e-4424-8c27-5a6baba93b87",
-      "name": "应用授权 获取当前应用的 Access Token",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "应用授权 获取当前应用的 Access Token"
     },
     {
       "parameters": {
@@ -462,20 +396,14 @@
           "mode": "id"
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         400
       ],
       "id": "1dec1c0e-e7dd-479c-8b56-b3241204cc65",
-      "name": "AI表格 获取所有字段",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 获取所有字段"
     },
     {
       "parameters": {
@@ -485,20 +413,14 @@
         "sheetIdOrName": "={{ $('AI表格 解析URL').item.json.sheetId }}",
         "fieldIdOrName": "={{ $json.id }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1840,
         560
       ],
       "id": "c493ca08-75f5-4621-871a-89e2a0e7b332",
-      "name": "AI表格 删除字段",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 删除字段"
     },
     {
       "parameters": {
@@ -532,20 +454,14 @@
         },
         "fieldIdOrName": "={{ $json.name }}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1536,
         560
       ],
       "id": "27b10063-eea2-4a18-a734-5858222a2f58",
-      "name": "AI表格 更新字段",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 更新字段"
     },
     {
       "parameters": {
@@ -563,20 +479,14 @@
         },
         "body": "={\n  \"name\": \"{{ $now.toMillis() }}\",\n  \"property\": {\n    \"choices\": [\n      {\n        \"name\": \"完成\"\n      },\n      {\n        \"name\": \"失败\"\n      }\n    ]\n  },\n  \"type\": \"singleSelect\"\n}"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         560
       ],
       "id": "8f8a815d-7779-4ada-983e-d6c95a6c8417",
-      "name": "AI表格 创建字段",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 创建字段"
     },
     {
       "parameters": {
@@ -695,20 +605,14 @@
           "convertFieldsToString": false
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1536,
         96
       ],
       "id": "61b0574e-fc7c-4e4b-8e3f-911693eee37b",
-      "name": "AI表格 更新记录",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 更新记录"
     },
     {
       "parameters": {
@@ -734,20 +638,14 @@
           ]
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1184,
         -64
       ],
       "id": "5b3fe468-af13-44e8-bf95-499f92ce014a",
-      "name": "AI表格 列出多行记录",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 列出多行记录"
     }
   ],
   "pinData": {},

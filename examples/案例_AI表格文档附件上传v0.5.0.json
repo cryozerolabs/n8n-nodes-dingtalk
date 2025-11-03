@@ -17,7 +17,7 @@
         "resource": "notable",
         "operation": "notable.parseUrl"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         704,
@@ -143,20 +143,14 @@
         "operation": "doc.resource.upload",
         "docId": "gvNG4YZ7JnkovqmwFZX41RPl82LD0oRE"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1552,
         -96
       ],
       "id": "ec7e8986-67de-4239-b4f1-f4ef9a8226e7",
-      "name": "文档 获取资源上传信息并上传1",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "文档 获取资源上传信息并上传1"
     },
     {
       "parameters": {
@@ -164,20 +158,14 @@
         "operation": "doc.resource.upload",
         "docId": "gvNG4YZ7JnkovqmwFZX41RPl82LD0oRE"
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1552,
         160
       ],
       "id": "2a268762-9bfa-48f6-9b6f-1d24ac18cb17",
-      "name": "文档 获取资源上传信息并上传",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "文档 获取资源上传信息并上传"
     },
     {
       "parameters": {
@@ -346,20 +334,14 @@
           "convertFieldsToString": false
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1936,
         -96
       ],
       "id": "a9ce7848-c59f-464f-9019-0f68c195b0a1",
-      "name": "AI表格 新增记录：多文件",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 新增记录：多文件"
     },
     {
       "parameters": {
@@ -477,20 +459,14 @@
           "convertFieldsToString": false
         }
       },
-      "type": "CUSTOM.dingtalkNode",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
       "position": [
         1936,
         160
       ],
       "id": "6541e5a0-a2b8-434c-83a4-4d8ba9398e67",
-      "name": "AI表格 新增记录：单文件",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "AI表格 新增记录：单文件"
     },
     {
       "parameters": {

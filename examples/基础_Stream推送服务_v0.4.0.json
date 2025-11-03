@@ -3,20 +3,14 @@
   "nodes": [
     {
       "parameters": {},
-      "type": "CUSTOM.dingtalkNodeTrigger",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNodeTrigger",
       "typeVersion": 1,
       "position": [
         464,
         192
       ],
       "id": "896ab3f2-ac77-4c6d-a1fe-eb105ee55572",
-      "name": "Dingtalk Node Trigger",
-      "credentials": {
-        "dingtalkApi": {
-          "id": "mEh0ffWLDuvnPoI3",
-          "name": "Dingtalk account"
-        }
-      }
+      "name": "Dingtalk Node Trigger"
     },
     {
       "parameters": {
