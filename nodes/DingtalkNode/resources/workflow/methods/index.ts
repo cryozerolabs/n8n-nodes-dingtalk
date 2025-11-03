@@ -1,7 +1,9 @@
-import * as resourceMapping from './resourceMapping';
+import { workflowGetProcessVariables } from './resourceMapping';
 
 const methods = {
-  resourceMapping,
+  resourceMapping: {
+    workflowGetProcessVariables,
+  },
 };
 
 export default methods;
