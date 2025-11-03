@@ -55,6 +55,20 @@
 - **根据手机号查询用户** - 根据手机号获取用户的userId
 - **搜索用户userId** - 获取指定用户的详细信息
 
+### 💼 OA审批（workflow）
+- 获取单个审批实例详情
+- 添加审批评论
+- 下载审批附件
+- 获取审批实例ID列表
+- 获取审批钉盘空间信息
+- 获取指定用户可见的审批表单列表
+- [钉钉专业版💎]更新流程表单审批实例
+
+### 🤖 机器人（robot）
+- [钉钉专业版💎]发送DING消息
+- [钉钉专业版💎]撤回已经发送的DING消息
+- 自定义机器人发送群消息
+
 ### ⚡️ 事件订阅
 ![Stream Push](docs/images/stream-push-guide.png)
 - **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
@@ -123,37 +137,16 @@
 
 本节点目前已实现钉钉开放平台的核心功能。对于尚未开发的 API 接口，你可以通过以下方式扩展使用：
 
-#### 1. 获取统一访问令牌
-
-使用本节点的 **身份验证** → **获取访问令牌** 操作来获取 `access_token`：
-
-```json
-{
-  "resource": "auth",
-  "operation": "auth.tokenGet"
-}
-```
-
-#### 2. 使用 HTTP Request 节点
-
-将获取的 `access_token` 用于 n8n 的 **HTTP Request** 节点来调用任何钉钉 API：
+#### 使用 HTTP Request 节点
+使用 n8n 的 **HTTP Request** 节点来调用任何钉钉 API：
 
 **基本配置示例：**
-- **方法**: POST/GET（根据 API 要求）
+- **方法**: POST/GET/PUT（根据 API 要求）
 - **URL**: `https://api.dingtalk.com/v1.0/[API路径]`
-- **Headers**: 
-  ```json
-  {
-    "x-acs-dingtalk-access-token": "{{ $json.accessToken }} }}",
-    "Content-Type": "application/json"
-  }
-  ```
-- **Body**: 根据具体 API 要求配置
-
-**实际应用示例：**
-1. 先运行 "获取访问令牌" 节点
-2. 在 HTTP Request 节点中引用上一步的 token
-3. 调用你需要的钉钉 API
+- **Authentication**: `Predefined Credential Type`
+- **Credential Type**: `Dingtalk API`、`Dingtalk Robot API`
+- **Send Query Parameters**: 根据具体 API 要求配置
+- **Send Body**: 根据具体 API 要求配置
 
 这种方式让你可以使用钉钉开放平台的任何 API，而不受本节点当前功能的限制。所有的身份验证和令牌管理都由本节点自动处理。
 
@@ -209,6 +202,14 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+## v0.5.0
+- 新增：部分常用的审批操作
+- 新增：钉钉机器人发送、撤回DING消息（钉钉专业版）
+- 新增：钉钉Stream推送+工作流+AI案例
+- 新增：AI表格（文档）文件上传，详情见案例
+- 修复：AI表格附件字段类型错误，应该是Array
+- 修复：将常用的eslint统一管理
+- 修复：Http Request中Predefined Credential Type不能选择Dingtalk API、Dingtalk Robot API的问题
 
 ## v0.4.0
 - 新增：根据手机号查询用户、搜索用户userId，简化用户获取unionId的步骤

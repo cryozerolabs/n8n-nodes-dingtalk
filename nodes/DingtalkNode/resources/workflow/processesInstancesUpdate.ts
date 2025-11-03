@@ -142,7 +142,7 @@ const op: OperationDef = {
         const pushVariable = (fieldId: string, rawValue: unknown) => {
           if (rawValue === undefined) return;
 
-          let mainValue = rawValue;
+          let mainValue: unknown = rawValue;
           let extValue: unknown;
           if (typeof rawValue === 'object' && rawValue !== null && !Array.isArray(rawValue)) {
             const rawObj = rawValue as IDataObject;
