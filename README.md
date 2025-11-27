@@ -202,6 +202,9 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+## v0.5.1
+- 修改: 请求钉钉API返回的结果如果包含`errcode`，则将`errmsg`作为错误信息返回, 而不是当作正常的请求返回
+
 ## v0.5.0
 - 新增：部分常用的审批操作
 - 新增：钉钉机器人发送、撤回DING消息（钉钉专业版）
