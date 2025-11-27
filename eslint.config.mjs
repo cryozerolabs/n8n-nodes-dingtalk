@@ -22,10 +22,12 @@ export default [
       // 允许使用未排序的选项，一般同一组的选项会放在一起，排序后不方便阅读
       'n8n-nodes-base/node-param-options-type-unsorted-items': 'off',
       'n8n-nodes-base/node-param-fixed-collection-type-unsorted-items': 'off',
-      
+
       'n8n-nodes-base/node-param-description-wrong-for-dynamic-options': 'off',
       // 中文语境，不会以Name or ID作为描述结尾
       'n8n-nodes-base/node-param-display-name-wrong-for-dynamic-options': 'off',
+
+      'n8n-nodes-base/node-param-description-miscased-id': 'off',
     },
   },
 ];
