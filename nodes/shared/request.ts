@@ -108,6 +108,11 @@ async function originRequest(
       },
     },
   );
+·
+  // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
+  if (!!resp.errcode) {
+    throw new Error(resp.errmsg);
+  }
 
   // 统一打点: 收到后
   this.logger?.debug?.('response (after)', {

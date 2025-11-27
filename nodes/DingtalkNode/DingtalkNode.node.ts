@@ -73,8 +73,6 @@ const mergedMethods: MethodsType = (() => {
       Object.assign(out[ns] as object, part);
     }
   }
-
-  console.log(`methods`, out);
   return out as MethodsType;
 })();
 
