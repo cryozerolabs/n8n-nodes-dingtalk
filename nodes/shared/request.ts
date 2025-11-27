@@ -108,9 +108,9 @@ async function originRequest(
       },
     },
   );
-·
+
   // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
-  if (!!resp.errcode) {
+  if (resp.errcode) {
     throw new Error(resp.errmsg);
   }
 
