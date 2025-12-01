@@ -1,5 +1,5 @@
 import {
-  NodeConnectionType,
+  NodeConnectionTypes,
   type INodeType,
   type INodeTypeDescription,
   type INodeProperties,
@@ -95,8 +95,8 @@ export class DingtalkNode implements INodeType {
     description: 'Interact with the Dingtalk API',
     defaults: { name: 'Dingtalk Node' },
     usableAsTool: true,
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: 'dingtalkApi',

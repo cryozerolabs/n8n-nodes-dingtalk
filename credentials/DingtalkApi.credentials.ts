@@ -5,8 +5,8 @@ import type {
   ICredentialType,
   IHttpRequestHelper,
   INodeProperties,
+  IHttpRequestOptions,
 } from 'n8n-workflow';
-import { IHttpRequestOptions } from 'n8n-workflow/dist/Interfaces';
 
 export class DingtalkApi implements ICredentialType {
   name = 'dingtalkApi';

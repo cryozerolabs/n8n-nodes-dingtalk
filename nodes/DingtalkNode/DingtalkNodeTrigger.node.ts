@@ -1,5 +1,5 @@
 import {
-  NodeConnectionType,
+  NodeConnectionTypes,
   NodeOperationError,
   type INodeProperties,
   type INodeType,
@@ -42,7 +42,7 @@ export class DingtalkNodeTrigger implements INodeType {
       name: 'Dingtalk Node Trigger',
     },
     inputs: [],
-    outputs: [NodeConnectionType.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: 'dingtalkApi',
