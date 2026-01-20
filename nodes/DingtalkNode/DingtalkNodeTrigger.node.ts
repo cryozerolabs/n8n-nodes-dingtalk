@@ -1,5 +1,5 @@
 import {
-  NodeConnectionType,
+  NodeConnectionTypes,
   NodeOperationError,
   type INodeProperties,
   type INodeType,
@@ -29,11 +29,12 @@ const triggerDefinitions: TriggerDefinition[] = [
 
 const triggerMap = new Map(triggerDefinitions.map((def) => [def.value, def]));
 
+// eslint-disable-next-line @n8n/community-nodes/node-usable-as-tool
 export class DingtalkNodeTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node Trigger',
     name: 'dingtalkNodeTrigger',
-    icon: 'file:icon.png',
+    icon: 'file:icon.svg',
     group: ['trigger'],
     version: 1,
     description: 'Dingtalk Node Trigger',
@@ -42,7 +43,7 @@ export class DingtalkNodeTrigger implements INodeType {
       name: 'Dingtalk Node Trigger',
     },
     inputs: [],
-    outputs: [NodeConnectionType.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: 'dingtalkApi',

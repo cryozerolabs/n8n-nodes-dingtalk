@@ -1,0 +1,586 @@
+{
+  "name": "基础_表格操作_v0.6.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [16, -256],
+      "id": "1deece56-2f57-4687-ac48-853bc1763616",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## 工作表",
+        "height": 240,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [416, -336],
+      "id": "fa92e490-215e-45b8-b1c9-20cdc9ab3efb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eef35de1-1711-486c-b410-5daaf06b8011",
+              "name": "workbookId",
+              "value": "N7dx2rn0JbGOL7dmcQOPlepk8MGjLRb3",
+              "type": "string"
+            },
+            {
+              "id": "1389279e-2d74-4690-807d-a1334844d2f4",
+              "name": "workbookUrl",
+              "value": "https://alidocs.dingtalk.com/i/nodes/N7dx2rn0JbGOL7dmcQOPlepk8MGjLRb3",
+              "type": "string"
+            },
+            {
+              "id": "8c8d87b4-3f11-4976-8593-a1b35544c3d8",
+              "name": "defaultSheet",
+              "value": "Sheet1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [208, -256],
+      "id": "4081bacb-ea16-43c7-819e-61dfd3db5143",
+      "name": "Workbook config"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.sheets.getAll",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $json.workbookUrl }}",
+          "mode": "url"
+        }
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [464, -256],
+      "id": "a0780865-348d-41cb-b140-609e62d4ca65",
+      "name": "表格 获取所有工作表"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.sheets.create",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "name": "={{ $now.toMillis() }}"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [848, -256],
+      "id": "aaace46d-b2f7-40cc-a87b-d1398d6fa946",
+      "name": "表格 创建工作表"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.shees.get",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "kgqie6hm",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        }
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [656, -256],
+      "id": "3be31af1-6bf9-4852-98b2-97246d168753",
+      "name": "表格 获取工作表"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.sheets.delete",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [1056, -256],
+      "id": "60ff621a-b5ab-4db0-8355-29a87be42e49",
+      "name": "表格 删除工作表"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.rows.insertBefore",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "kgqie6hm",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "rowCount": 2
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [464, 0],
+      "id": "7afcd7ff-a919-4f26-9b9a-adced66d9421",
+      "name": "表格 指定行上方插入若干行"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.rows.visibility",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "visibility": "hidden"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [656, 0],
+      "id": "f2e6a7f0-d318-4bd9-956c-91dd4cea5576",
+      "name": "表格 设置行隐藏或显示"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.rows.delete",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "rowCount": 2
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [848, 0],
+      "id": "1cab5395-470d-4bde-8693-8c5177981340",
+      "name": "表格 删除行"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.columns.insertBefore",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "columnCount": 2
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [1056, 0],
+      "id": "245e75a0-eb98-442f-a97d-a529610f09ee",
+      "name": "表格 指定列上方插入若干列"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.columns.visibility",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "visibility": "hidden"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [1264, 0],
+      "id": "13e32db9-a8ff-4ad2-b87c-da17a1711f08",
+      "name": "表格 设置列隐藏或显示"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.columns.delete",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "columnCount": 2
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [1472, 0],
+      "id": "bf7523f7-820e-49ec-9f4c-43006dace70d",
+      "name": "表格 删除列"
+    },
+    {
+      "parameters": {
+        "content": "## 行/列",
+        "height": 240,
+        "width": 1216,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [416, -64],
+      "id": "22850ec6-b026-407c-bde6-73cdf5527d58",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.ranges.get",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $json.defaultSheet }}",
+          "mode": "id"
+        },
+        "rangeAddress": "A1:A3"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [464, 320],
+      "id": "d2dd8000-a1bc-4ff5-8338-7fa0164a92f2",
+      "name": "表格 获取单元格区域"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.range.update",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "rangeAddress": "A3:C4",
+        "jsonBody": "{\n  \"values\": [\n    [\n      \"李四\",\n      \"24\",\n      \"2004.04.04\"\n    ],\n    [\n      \"王五\",\n      \"25\",\n      \"2005.05.05\"\n    ]\n  ]\n}"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [656, 320],
+      "id": "edb54ccb-8915-47c0-bdfa-06495fae282d",
+      "name": "表格 更新单元格区域"
+    },
+    {
+      "parameters": {
+        "content": "## 行/列",
+        "height": 272,
+        "width": 384,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [416, 208],
+      "id": "ef08c989-8928-4305-8356-4d7ad9c60915",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## 更新单元格区域增强\n本节点通过指定标题的范围更直观的在n8n中录入数据\n并且直接添加到单元格行尾\n",
+        "height": 272,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [816, 208],
+      "id": "62ba3d99-15fe-4422-bc07-0e1a8dcc486a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "resource": "workbooks",
+        "operation": "workbooks.ranges.append",
+        "workbookId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.workbookId }}",
+          "mode": "id"
+        },
+        "sheetId": {
+          "__rl": true,
+          "value": "={{ $('Workbook config').item.json.defaultSheet }}",
+          "mode": "id"
+        },
+        "headerRange": "A1:C1",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "A": "=测试",
+            "B": "18",
+            "C": "={{ $now.format('yyyy.MM.dd') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "A",
+              "displayName": "姓名 (A)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "B",
+              "displayName": "年龄 (B)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "string"
+            },
+            {
+              "id": "C",
+              "displayName": "生日 (C)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "removed": false,
+              "readOnly": false,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [944, 320],
+      "id": "17224c74-1740-441f-bbcb-c0558cfab28b",
+      "name": "表格 插入数据行"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Workbook config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workbook config": {
+      "main": [
+        [
+          {
+            "node": "表格 获取所有工作表",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "表格 指定行上方插入若干行",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "表格 获取单元格区域",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 获取所有工作表": {
+      "main": [
+        [
+          {
+            "node": "表格 获取工作表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 创建工作表": {
+      "main": [
+        [
+          {
+            "node": "表格 删除工作表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 获取工作表": {
+      "main": [
+        [
+          {
+            "node": "表格 创建工作表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 指定行上方插入若干行": {
+      "main": [
+        [
+          {
+            "node": "表格 设置行隐藏或显示",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 设置行隐藏或显示": {
+      "main": [
+        [
+          {
+            "node": "表格 删除行",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 删除行": {
+      "main": [
+        [
+          {
+            "node": "表格 指定列上方插入若干列",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 指定列上方插入若干列": {
+      "main": [
+        [
+          {
+            "node": "表格 设置列隐藏或显示",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 设置列隐藏或显示": {
+      "main": [
+        [
+          {
+            "node": "表格 删除列",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 获取单元格区域": {
+      "main": [
+        [
+          {
+            "node": "表格 更新单元格区域",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 更新单元格区域": {
+      "main": [
+        [
+          {
+            "node": "表格 插入数据行",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "表格 插入数据行": {
+      "main": [[]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e855e8a9-b263-4818-ad71-054c8ebd7bff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e96fe2cae398e36edfe4bc0912a45f19fdc17c48dd38ac61c30f50c7ad85c2bf"
+  },
+  "id": "L0oAHMPSQHHMOY4xVdT64",
+  "tags": [
+    {
+      "name": "Ding Talk",
+      "id": "euaPGODToZGFWnrD",
+      "updatedAt": "2026-01-20T15:56:45.076Z",
+      "createdAt": "2026-01-20T15:56:45.076Z"
+    }
+  ]
+}

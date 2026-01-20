@@ -1,3 +1,4 @@
+/* eslint-disable @n8n/community-nodes/no-restricted-globals */
 import {
   NodeOperationError,
   type IDataObject,
@@ -5,7 +6,6 @@ import {
   type ITriggerFunctions,
   type ITriggerResponse,
 } from 'n8n-workflow';
-import { WebSocket } from 'undici';
 
 // DingTalk's Stream gateway meta. Ticket validity isn't documented precisely, so we reconnect
 // aggressively whenever the server tells us to or the heartbeat times out.
@@ -316,7 +316,7 @@ export async function runStreamPushTrigger(
       updateHeartbeat();
       startHeartbeatMonitor();
 
-      ws.addEventListener('message', (event) => {
+      ws.addEventListener('message', (event: MessageEvent) => {
         if (typeof event.data === 'string') {
           handleDownstream(event.data);
         } else if (event.data instanceof ArrayBuffer) {
@@ -334,8 +334,8 @@ export async function runStreamPushTrigger(
         }
       });
 
-      ws.addEventListener('error', (event) => {
-        const err = event?.error ?? event;
+      ws.addEventListener('error', (event: Event | ErrorEvent) => {
+        const err = 'error' in event ? event.error : event;
         if (err instanceof Error || typeof err === 'string') {
           this.logger?.error?.('DingTalk stream socket error', {
             error: err instanceof Error ? err.message : String(err),

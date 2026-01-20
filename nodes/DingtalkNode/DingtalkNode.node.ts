@@ -1,5 +1,5 @@
 import {
-  NodeConnectionType,
+  NodeConnectionTypes,
   type INodeType,
   type INodeTypeDescription,
   type INodeProperties,
@@ -16,6 +16,7 @@ import notableBundle from './resources/notable';
 import robotBundle from './resources/robot';
 import userBundle from './resources/user';
 import workflowBundle from './resources/workflow';
+import workbooksBundle from './resources/workbooks';
 
 // 静态导入所有资源包
 const bundles: ResourceBundle[] = [
@@ -25,6 +26,7 @@ const bundles: ResourceBundle[] = [
   robotBundle,
   userBundle,
   workflowBundle,
+  workbooksBundle,
 ];
 
 // 资源去重校验
@@ -86,8 +88,7 @@ export class DingtalkNode implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node',
     name: 'dingtalkNode',
-
-    icon: 'file:icon.png',
+    icon: 'file:icon.svg',
     group: ['transform'],
     version: 1,
     // 副标题: 显示 “资源 · 操作短名”
@@ -95,8 +96,8 @@ export class DingtalkNode implements INodeType {
     description: 'Interact with the Dingtalk API',
     defaults: { name: 'Dingtalk Node' },
     usableAsTool: true,
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    inputs: [NodeConnectionTypes.Main],
+    outputs: [NodeConnectionTypes.Main],
     credentials: [
       {
         name: 'dingtalkApi',

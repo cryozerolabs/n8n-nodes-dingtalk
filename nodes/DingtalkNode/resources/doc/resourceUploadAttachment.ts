@@ -91,7 +91,7 @@ const op: OperationDef = {
       },
       body: uploadBuffer,
       json: false,
-      encoding: null,
+      encoding: undefined,
     });
 
     return {

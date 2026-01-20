@@ -5,6 +5,7 @@
 ## 📁 示例文件
 
 ### 基础功能示例
+
 - `基础_AI表格操作_v0.2.0.json` - 完整的 AI 表格操作演示，包括：
   - 用户信息获取（获取 unionId）
   - AI 表格 URL 解析（提取 baseId、sheetId、viewId）
@@ -13,7 +14,10 @@
   - 访问令牌获取演示
 - `基础_Stream推送服务_v0.4.0.json` - 使用Stream模式订阅事件
 - `基础_机器人_v0.5.0.json` - 使用机器人发送DING消息、自定义机器人发送群消息
+- `基础_表格操作_v0.6.0.json` - 完整的表格操作演示
+
 ### 📝 更多示例
+
 - `案例_报销流程提取发票信息进行校验并反馈_v0.5.0.json` - 扩展钉钉审批流程，结合AI提取审批流程中的发票信息并进行校验，将结果通过DING消息、回填审批实例、评论审批实例等方式反馈
 - `案例_AI表格文档附件上传_v0.5.0` - 将单个和多个文件上传至AI表格
 
@@ -22,11 +26,13 @@
 ### 1. 导入工作流
 
 **方法一：通过 URL 导入（推荐）**
+
 ```
 https://raw.githubusercontent.com/cryozerolabs/n8n-nodes-dingtalk/main/examples/[文件名].json
 ```
 
 **方法二：下载文件导入**
+
 1. 下载对应的 JSON 文件
 2. 在 n8n 中点击 "Import from file"
 3. 选择下载的 JSON 文件
@@ -34,6 +40,7 @@ https://raw.githubusercontent.com/cryozerolabs/n8n-nodes-dingtalk/main/examples/
 ### 2. 配置凭据
 
 导入工作流后，你需要：
+
 1. **配置钉钉 API 凭据**（Corp ID、Client ID 和 Client Secret）
 2. **调整实际参数**：
    - 修改示例中的 AI 表格 URL 为你的真实表格链接

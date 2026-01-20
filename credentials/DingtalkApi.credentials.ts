@@ -5,15 +5,15 @@ import type {
   ICredentialType,
   IHttpRequestHelper,
   INodeProperties,
+  IHttpRequestOptions,
 } from 'n8n-workflow';
-import { IHttpRequestOptions } from 'n8n-workflow/dist/Interfaces';
 
 export class DingtalkApi implements ICredentialType {
   name = 'dingtalkApi';
 
   displayName = 'Dingtalk API';
 
-  icon = 'file:icon.png' as const;
+  icon = 'file:icon.svg' as const;
 
   // Link to your community node's README
   documentationUrl =

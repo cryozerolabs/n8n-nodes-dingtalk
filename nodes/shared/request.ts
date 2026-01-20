@@ -1,5 +1,4 @@
-import type { IExecuteFunctions, ILoadOptionsFunctions } from 'n8n-workflow';
-import type { IHttpRequestOptions, IRequestOptions } from 'n8n-workflow/dist/Interfaces';
+import type { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
 
 type Ctx = IExecuteFunctions | ILoadOptionsFunctions;
 type RequestExtras = {
@@ -48,7 +47,7 @@ function looksLikeTokenProblem(body: unknown): boolean {
 
 async function originRequest(
   this: Ctx,
-  options: IRequestOptions,
+  options: IHttpRequestOptions,
   credentialType: string,
   clearAccessToken = false,
 ) {
@@ -109,22 +108,22 @@ async function originRequest(
     },
   );
 
-  // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
-  if (resp.errcode) {
-    throw new Error(resp.errmsg);
-  }
-
   // 统一打点: 收到后
   this.logger?.debug?.('response (after)', {
     response: resp,
   });
+
+  // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
+  if (resp.errcode) {
+    throw new Error(resp.errmsg);
+  }
 
   return resp;
 }
 
 export async function request<T = unknown>(
   this: Ctx,
-  options: IRequestOptions,
+  options: IHttpRequestOptions,
   extras: RequestExtras = {},
 ): Promise<T> {
   const credentialType = extras.credentialType ?? 'dingtalkApi';
@@ -144,6 +143,12 @@ export async function request<T = unknown>(
       description?: unknown;
       message?: unknown;
     };
+
+    this.logger?.error?.('request (error)', {
+      context: e.context,
+      description: e.description,
+      message: e.message,
+    });
 
     const maybeAuth = looksLikeTokenProblem(e.context?.data ?? e.description ?? err);
 

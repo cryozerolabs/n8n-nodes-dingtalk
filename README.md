@@ -10,6 +10,7 @@
 > ⚡ 使用教程、最佳实践等详尽说明请访问项目 Wiki：<https://github.com/cryozerolabs/n8n-nodes-dingtalk/wiki>
 
 ## 📖 目录
+
 - [支持的功能](#-支持的功能)
 - [安装指南](#-安装指南)
 - [身份验证配置](#-身份验证配置)
@@ -23,10 +24,13 @@
 ## ✨ 支持的功能
 
 ### 🤖 身份验证 (Auth)
+
 - **获取访问令牌** - 自动获取和刷新 access_token
 
 ### 📊 AI 表格 (Notable)
+
 ![Notable](docs/images/notable-ai-table-guide.png)
+
 - **解析 URL** - 从钉钉 AI 表格 URL 提取 baseId、sheetId、viewId
 - **数据表管理**：
   - 新建数据表
@@ -46,16 +50,43 @@
   - 更新记录
   - 删除记录
 
-
 ### 📄 文档 (Doc)
-- **获取资源上传信息** - 查询文档指定资源的上传地址
+
+- 获取资源上传信息
+- 获取文档上传信息并上传
+
+### 📄 表格 (Workbook)
+
+![Workbook](docs/images/workbook-guide.png)
+
+- **工作表**:
+  - 获取所有工作表
+  - 获取工作表
+  - 创建工作表
+  - 删除工作表
+- **行/列**:
+  - 指定行上方插入若干行
+  - 指定列左侧插入若干列
+  - 删除行
+  - 删除列
+  - 设置行隐藏或显示
+  - 设置列隐藏或显示
+- **单元格区域**:
+  - 获取单元格区域
+  - 更新单元格区域
+  - 清除单元格区域内数据
+  - 清除单元格区域内所有内容
 
 ### 👥 用户管理 (User)
+
 - **获取用户详情** - 根据 userId 获取用户信息(unionId)
 - **根据手机号查询用户** - 根据手机号获取用户的userId
 - **搜索用户userId** - 获取指定用户的详细信息
 
 ### 💼 OA审批（workflow）
+
+![Stream Push](docs/images/workflow-processes-guide.png)
+
 - 获取单个审批实例详情
 - 添加审批评论
 - 下载审批附件
@@ -65,14 +96,16 @@
 - [钉钉专业版💎]更新流程表单审批实例
 
 ### 🤖 机器人（robot）
+
 - [钉钉专业版💎]发送DING消息
 - [钉钉专业版💎]撤回已经发送的DING消息
 - 自定义机器人发送群消息
 
 ### ⚡️ 事件订阅
-![Stream Push](docs/images/stream-push-guide.png)
-- **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
 
+![Stream Push](docs/images/stream-push-guide.png)
+
+- **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
 
 ## 🚀 安装指南
 
@@ -99,6 +132,7 @@
 ### 2. 配置 n8n 凭据
 
 在 n8n 中创建 **钉钉 API** 凭据：
+
 - **Corp ID**: 你的钉钉应用运行的组织ID，在[钉钉开放平台开发者后台](https://open-dev.dingtalk.com/)获取
 - **Client ID**: 你的钉钉应用 ClientId
 - **Client Secret**: 你的钉钉应用 ClientSecret
@@ -126,11 +160,13 @@
 ### 获取必要参数
 
 #### AI 表格参数
+
 - **baseId**: 通过 "解析URL" 操作从钉钉表格分享链接中提取
 - **sheetId**: 同样可以通过 "解析URL" 操作获取
 - **operatorId**: 默认复用凭证中的 `userUnionId`。如需指定其他操作人，可在节点中勾选 **不使用凭证中的操作人** 后手动填写或使用表达式引用
 
 #### 用户参数
+
 - **userId**: 钉钉用户的唯一标识符
 
 ### 扩展功能 - 调用其他钉钉 API
@@ -138,9 +174,11 @@
 本节点目前已实现钉钉开放平台的核心功能。对于尚未开发的 API 接口，你可以通过以下方式扩展使用：
 
 #### 使用 HTTP Request 节点
+
 使用 n8n 的 **HTTP Request** 节点来调用任何钉钉 API：
 
 **基本配置示例：**
+
 - **方法**: POST/GET/PUT（根据 API 要求）
 - **URL**: `https://api.dingtalk.com/v1.0/[API路径]`
 - **Authentication**: `Predefined Credential Type`
@@ -159,7 +197,6 @@
 所有示例工作流都存放在 `examples/` 目录中，你可以：
 
 **直接下载单个文件**：访问 [examples 目录](https://github.com/cryozerolabs/n8n-nodes-dingtalk/tree/main/examples) 下载需要的 JSON 文件
-
 
 ### 示例内容
 
@@ -186,26 +223,38 @@
 ## 📚 相关资源
 
 ### 官方文档
+
 - [钉钉开放平台](https://open.dingtalk.com/)
 - [钉钉 API 调用指南](https://open.dingtalk.com/document/development/how-to-call-apis)
 - [钉钉访问令牌获取](https://open.dingtalk.com/document/development/api-gettoken)
 - [AI 表格 API 文档](https://open.dingtalk.com/document/orgapp/overview-ai-form)
 
 ### n8n 相关
+
 - [n8n 官方文档](https://docs.n8n.io/)
 - [n8n 社区节点文档](https://docs.n8n.io/integrations/community-nodes/)
 - [n8n 入门指南](https://docs.n8n.io/try-it-out/)
 
 ### 社区支持
+
 - [GitHub 仓库](https://github.com/cryozerolabs/n8n-nodes-dingtalk)
 - [问题反馈](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues)
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+## v0.6.0
+
+- 新增：钉钉表格操作，包括工作表、行列、单元格区域
+- 新增：钉钉表格额外新增插入数据行
+- 修改：如果需要操作人unionId则会先检查是否有值
+
 ## v0.5.1
+
 - 修改: 请求钉钉API返回的结果如果包含`errcode`，则将`errmsg`作为错误信息返回, 而不是当作正常的请求返回
 
 ## v0.5.0
+
 - 新增：部分常用的审批操作
 - 新增：钉钉机器人发送、撤回DING消息（钉钉专业版）
 - 新增：钉钉Stream推送+工作流+AI案例
@@ -215,18 +264,22 @@
 - 修复：Http Request中Predefined Credential Type不能选择Dingtalk API、Dingtalk Robot API的问题
 
 ## v0.4.0
+
 - 新增：根据手机号查询用户、搜索用户userId，简化用户获取unionId的步骤
 - 新增：⚡️Stream模式事件订阅触发器
 - 修改：凭证获取access_token使用企业内部api（钉钉新版本获取的统一access_token的api存在不兼容）
 
 ### v0.3.4
-- 增强http请求，钉钉应用申请权限后，需要使用新的access_token才会生效，对于`应用尚未开通所需的权限：[XXX.XXX.XXX]`错误，尝试刷新access_token（即使用户没有去修改权限） 
+
+- 增强http请求，钉钉应用申请权限后，需要使用新的access_token才会生效，对于`应用尚未开通所需的权限：[XXX.XXX.XXX]`错误，尝试刷新access_token（即使用户没有去修改权限）
 
 ### v0.3.3
+
 - 修复了AccessToken过期后无法自动刷新的问题
 
 ### v0.3.0
-#### ⚠️ 升级提示 
+
+#### ⚠️ 升级提示
 
 v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检查旧工作流中的相关节点：
 
@@ -237,9 +290,11 @@ v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检
 完成以上步骤后，保存并重新运行工作流以验证行为是否符合预期。
 
 #### 凭证
+
 - 新增 `操作人ID（unionId）` 字段，可在凭证中预填常用操作人的 unionId，避免每个节点重复输入
 
 #### AI 表格
+
 - 统一封装 `baseId`、`sheetId`、`operatorId` 参数，所有记录类操作使用相同的引用方式
   - `baseId`：支持 `By ID`、`From URL` 两种模式，自动解析分享链接
   - `sheetId`：支持 `By ID`、`From URL`、`From List`（可搜索数据表列表）
@@ -250,13 +305,15 @@ v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检
 - “删除多行记录”允许使用逗号分隔的 ID 列表，批量输入更轻松
 
 #### 文档
+
 - 新增 “获取资源上传信息” 操作，可直接为钉钉文档生成上传地址
 
-
 ### v0.1.1
+
 - ✅ 字段管理功能增强：新增字段创建、更新、删除、获取所有字段等操作
 
 ### v0.1.0
+
 - ✅ 实现钉钉身份验证
 - ✅ 自动刷新access_token
 - ✅ AI表格数据表、记录的操作
@@ -281,30 +338,30 @@ v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检
 git clone https://github.com/cryozerolabs/n8n-nodes-dingtalk.git
 cd n8n-nodes-dingtalk
 
-# 2. 安装依赖
-npm install
+# 2. 安装 n8n-node 开发工具（如果尚未安装）
+npm i -g @n8n/node-cli
 
-# 3. 安装 n8n-node 开发工具（如果尚未安装）
-npm install --global @n8n/node-cli
+# 3. 安装依赖
+pnpm i
 
-# 4. 构建项目
-npm run build
-
-# 5. 设置开发环境变量（可选，用于调试）
+# 4. 设置开发环境变量（可选，用于调试）
 export N8N_LOG_LEVEL=debug
+export N8N_LOG_OUTPUT=console,file
+export N8N_LOG_FILE_LOCATION="$PWD/logs/n8n.log"
+export N8N_LOG_FILE_SIZE_MAX=50
+# export N8N_LOG_FILE_COUNT_MAX=60
+# 只看当前滚动的新增日志
+tail -n 200 -F logs/n8n.log
 
-# 6. 启动 n8n 开发服务器（自动加载当前节点）
-npm run dev
+# 5. 启动 n8n 开发服务器
+pnpm dev
 
-# 7. 代码格式化和检查
-npm run format
-npm run lint
-
-# 8. 发布
-npm run release
+# 6. 发布
+pnpm release
 ```
 
 **开发提示：**
+
 - **`n8n-node dev`** 会自动启动一个包含当前节点的 n8n 测试环境
 - **测试环境**默认运行在 `http://localhost:5678`
 - 详细的开发文档请参考 [n8n 社区节点开发指南](https://docs.n8n.io/integrations/creating-nodes/)
@@ -320,6 +377,6 @@ npm run release
 ---
 
 **开发者**: [CryoZero Labs](https://github.com/cryozerolabs)  
-**维护状态**: ✅ 积极维护  
+**维护状态**: ✅ 积极维护
 
 如果这个节点对你有帮助，请给我们一个 ⭐ Star！

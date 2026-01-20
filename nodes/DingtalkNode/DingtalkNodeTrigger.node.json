@@ -1,24 +1,21 @@
 {
-	"node": "@cryozerolabs/n8n-nodes-dingtalk",
-	"nodeVersion": "0.5.1",
-	"codexVersion": "0.5.1",
-	"categories": [
-		"Productivity",
-		"Communication"
-	],
-	"resources": {
-		"credentialDocumentation": [
-			{
-				"url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file#-%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE"
-			}
-		],
-		"primaryDocumentation": [
-			{
-				"url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file"
-			},
-			{
-				"url": "https://open.dingtalk.com/document/development/develop-stream-mode-push-server"
-			}
-		]
-	}
+  "node": "@cryozerolabs/n8n-nodes-dingtalk",
+  "nodeVersion": "0.6.0",
+  "codexVersion": "0.6.0",
+  "categories": ["Productivity", "Communication"],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file#-%E8%BA%AB%E4%BB%BD%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://github.com/cryozerolabs/n8n-nodes-dingtalk?tab=readme-ov-file"
+      },
+      {
+        "url": "https://open.dingtalk.com/document/development/develop-stream-mode-push-server"
+      }
+    ]
+  }
 }

@@ -1,9 +1,9 @@
 import { makeResourceBundle } from '../../../shared/resource';
 import resourceGetUploadInfo from './resourceGetUploadinfo';
-import uploadAttachment from './uploadAttachment';
+import resourceUploadAttachment from './resourceUploadAttachment';
 
 export default makeResourceBundle({
   value: 'doc',
   name: '文档',
-  operations: [resourceGetUploadInfo, uploadAttachment],
+  operations: [resourceGetUploadInfo, resourceUploadAttachment],
 });
