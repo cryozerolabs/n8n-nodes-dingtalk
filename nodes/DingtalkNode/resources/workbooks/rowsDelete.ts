@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.rows.visibility';
+const OP = 'workbooks.rows.delete';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
@@ -33,30 +33,12 @@ const properties: INodeProperties[] = [
     required: true,
     displayOptions: showOnly,
   },
-  {
-    name: 'visibility',
-    displayName: '可见性',
-    type: 'options',
-    options: [
-      {
-        name: '可见',
-        value: 'visible',
-      },
-      {
-        name: '隐藏',
-        value: 'hidden',
-      },
-    ],
-    default: 'visible',
-    required: true,
-    displayOptions: showOnly,
-  },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 设置行隐藏或显示',
-  description: '设置行的可见性',
+  name: '删除行',
+  description: '删除指定的行',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
@@ -65,12 +47,12 @@ const op: OperationDef = {
     const operatorId = await getOperatorId(this, itemIndex);
     const row = this.getNodeParameter('row', itemIndex) as number;
     const rowCount = this.getNodeParameter('rowCount', itemIndex) as number;
-    const visibility = this.getNodeParameter('visibility', itemIndex) as string;
 
     const resp = await request.call(this, {
       method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/setRowsVisibility?operatorId=${operatorId}`,
-      body: { row, rowCount, visibility },
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/deleteRows`,
+      qs: { operatorId },
+      body: { row, rowCount },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

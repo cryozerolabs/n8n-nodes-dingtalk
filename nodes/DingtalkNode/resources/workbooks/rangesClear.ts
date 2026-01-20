@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.rows.insertBefore';
+const OP = 'workbooks.ranges.clear';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
@@ -17,41 +17,33 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'row',
-    displayName: '指定行的游标',
-    type: 'number',
-    default: 0,
+    name: 'rangeAddress',
+    displayName: '需要清除的单元格范围',
+    type: 'string',
+    default: '',
+    placeholder: '例如: B2:C3',
     required: true,
-    description: '指定行的游标, 从0开始',
-    displayOptions: showOnly,
-  },
-  {
-    name: 'rowCount',
-    displayName: '插入行的数量',
-    type: 'number',
-    default: 1,
-    required: true,
+    description: '需要清除的单元格范围，格式为 区域内左上角单元格:区域内右下角单元格, 例如：B2:C3',
     displayOptions: showOnly,
   },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 指定行上方插入若干行',
-  description: '在指定行上方插入若干行',
+  name: '清除单元格区域内所有内容',
+  description: '清除某个区域内的所有内容，包括格式和数据',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
     const sheetId = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
-    const row = this.getNodeParameter('row', itemIndex) as number;
-    const rowCount = this.getNodeParameter('rowCount', itemIndex) as number;
+    const rangeAddress = this.getNodeParameter('rangeAddress', itemIndex) as string;
 
     const resp = await request.call(this, {
       method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/insertRowsBefore?operatorId=${operatorId}`,
-      body: { row, rowCount },
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/ranges/${rangeAddress}/clear`,
+      qs: { operatorId },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

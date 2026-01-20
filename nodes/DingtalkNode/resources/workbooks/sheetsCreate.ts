@@ -7,42 +7,40 @@ import type {
 import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
+import { getWorkbook, workbookProps } from './common';
 
-const OP = 'doc.workbooks.rangeClear';
+const OP = 'workbooks.sheets.create';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
   ...operatorProps(showOnly),
   ...workbookProps(showOnly),
-  ...sheetProps(showOnly),
   {
-    name: 'rangeAddress',
-    displayName: '需要清除的单元格范围',
+    displayName: '工作表的名称',
+    name: 'name',
     type: 'string',
     default: '',
-    placeholder: '例如: B2:C3',
     required: true,
-    description: '需要清除的单元格范围，格式为 区域内左上角单元格:区域内右下角单元格, 例如：B2:C3',
     displayOptions: showOnly,
   },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 清除单元格区域内所有内容',
-  description: '清除某个区域内的所有内容，包括格式和数据',
+  name: '创建工作表',
+  description: '在表格文档中创建一个新的工作表',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
-    const sheetId = getSheet(this, itemIndex);
+    const name = this.getNodeParameter('name', itemIndex) as string;
     const operatorId = await getOperatorId(this, itemIndex);
-    const rangeAddress = this.getNodeParameter('rangeAddress', itemIndex) as string;
 
     const resp = await request.call(this, {
       method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/ranges/${rangeAddress}/clear?operatorId=${operatorId}`,
+      url: `/doc/workbooks/${workbookId}/sheets`,
+      qs: { operatorId },
+      body: { name },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

@@ -16,6 +16,7 @@ import notableBundle from './resources/notable';
 import robotBundle from './resources/robot';
 import userBundle from './resources/user';
 import workflowBundle from './resources/workflow';
+import workbooksBundle from './resources/workbooks';
 
 // 静态导入所有资源包
 const bundles: ResourceBundle[] = [
@@ -25,6 +26,7 @@ const bundles: ResourceBundle[] = [
   robotBundle,
   userBundle,
   workflowBundle,
+  workbooksBundle,
 ];
 
 // 资源去重校验

@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.sheetDelete';
+const OP = 'workbooks.sheets.delete';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
@@ -20,7 +20,7 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 删除工作表',
+  name: '删除工作表',
   description: '删除表格内的某个工作表',
   properties,
 
@@ -31,7 +31,8 @@ const op: OperationDef = {
 
     const resp = await request.call(this, {
       method: 'DELETE',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}?operatorId=${operatorId}`,
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}`,
+      qs: { operatorId },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

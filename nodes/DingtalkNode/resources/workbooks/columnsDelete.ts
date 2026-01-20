@@ -7,19 +7,29 @@ import type {
 import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { getWorkbook, workbookProps } from './common';
+import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.sheetCreate';
+const OP = 'workbooks.columns.delete';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
   ...operatorProps(showOnly),
   ...workbookProps(showOnly),
+  ...sheetProps(showOnly),
   {
-    displayName: '工作表的名称',
-    name: 'name',
-    type: 'string',
-    default: '',
+    name: 'column',
+    displayName: '要删除的第一列的游标',
+    type: 'number',
+    default: 0,
+    required: true,
+    description: '要删除的第一列的游标，从0开始',
+    displayOptions: showOnly,
+  },
+  {
+    name: 'columnCount',
+    displayName: '要删除的列的数量',
+    type: 'number',
+    default: 1,
     required: true,
     displayOptions: showOnly,
   },
@@ -27,19 +37,22 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 创建工作表',
-  description: '在表格文档中创建一个新的工作表',
+  name: '删除列',
+  description: '删除表格中的列',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
-    const name = this.getNodeParameter('name', itemIndex) as string;
+    const sheetId = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
+    const column = this.getNodeParameter('column', itemIndex) as number;
+    const columnCount = this.getNodeParameter('columnCount', itemIndex) as number;
 
     const resp = await request.call(this, {
       method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets?operatorId=${operatorId}`,
-      body: { name },
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/deleteColumns`,
+      qs: { operatorId },
+      body: { column, columnCount },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

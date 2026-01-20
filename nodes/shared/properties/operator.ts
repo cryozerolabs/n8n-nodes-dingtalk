@@ -64,15 +64,21 @@ export async function getOperatorId(ctx: IExecuteFunctions, itemIndex: number): 
   // 检查是否要覆盖操作人
   const overrideOperator = ctx.getNodeParameter('overrideOperator', itemIndex, false) as boolean;
 
+  let nodeOperatorId = '';
   if (overrideOperator) {
     // 如果选择覆盖，使用节点参数中的 operatorId
-    const nodeOperatorId = ctx.getNodeParameter('operatorId', itemIndex) as string;
-    return nodeOperatorId;
+    nodeOperatorId = ctx.getNodeParameter('operatorId', itemIndex) as string;
   } else {
     // 否则使用 credentials 中的 userUnionId
     const credentials = await ctx.getCredentials('dingtalkApi');
-    return (credentials.userUnionId as string) || '';
+    nodeOperatorId = (credentials.userUnionId as string) || '';
   }
+
+  if (!nodeOperatorId) {
+    throw new Error('请设置操作人unionId');
+  }
+
+  return nodeOperatorId;
 }
 
 /**

@@ -9,29 +9,50 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.sheetGet';
+const OP = 'workbooks.columns.insertBefore';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
   ...operatorProps(showOnly),
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
+  {
+    name: 'column',
+    displayName: '指定列的游标',
+    type: 'number',
+    default: 0,
+    required: true,
+    description: '指定列的游标, 从0开始',
+    displayOptions: showOnly,
+  },
+  {
+    name: 'columnCount',
+    displayName: '插入列的数量',
+    type: 'number',
+    default: 1,
+    required: true,
+    displayOptions: showOnly,
+  },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 获取工作表',
-  description: '获取某个工作表属性',
+  name: '指定列上方插入若干列',
+  description: '在指定列上方插入若干列',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
     const sheetId = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
+    const column = this.getNodeParameter('column', itemIndex) as number;
+    const columnCount = this.getNodeParameter('columnCount', itemIndex) as number;
 
     const resp = await request.call(this, {
-      method: 'GET',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}?operatorId=${operatorId}`,
+      method: 'POST',
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/insertColumnsBefore`,
+      qs: { operatorId },
+      body: { column, columnCount },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

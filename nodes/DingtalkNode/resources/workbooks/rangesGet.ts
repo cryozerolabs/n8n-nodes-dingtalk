@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.columns.insertBefore';
+const OP = 'workbooks.ranges.get';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
@@ -17,41 +17,44 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'column',
-    displayName: '指定列的游标',
-    type: 'number',
-    default: 0,
+    name: 'rangeAddress',
+    displayName: 'Range地址',
+    type: 'string',
+    default: '',
+    placeholder: '例如: A3:C3',
     required: true,
-    description: '指定列的游标, 从0开始',
+    description: '要获取的单元格范围, 格式为 区域内左上角单元格:区域内右下角单元格, 例如：B2:C3',
     displayOptions: showOnly,
   },
   {
-    name: 'columnCount',
-    displayName: '插入列的数量',
-    type: 'number',
-    default: 1,
-    required: true,
+    name: 'select',
+    displayName: '筛选要返回的字段',
+    type: 'string',
+    default: 'values',
+    placeholder: '例如: values,formulas',
+    description:
+      '筛选要返回的字段，该参数不传则返回所有字段。如values，该接口只返回values字段。返回多个字段时，使用逗号分隔，例如values,formulas，该接口只返回values和formulas字段。',
     displayOptions: showOnly,
   },
 ];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 指定列上方插入若干列',
-  description: '在指定列上方插入若干列',
+  name: '获取单元格区域',
+  description: '获取单元格属性',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
     const sheetId = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
-    const column = this.getNodeParameter('column', itemIndex) as number;
-    const columnCount = this.getNodeParameter('columnCount', itemIndex) as number;
+    const rangeAddress = this.getNodeParameter('rangeAddress', itemIndex) as string;
+    const select = this.getNodeParameter('select', itemIndex) as string;
 
     const resp = await request.call(this, {
-      method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/insertColumnsBefore?operatorId=${operatorId}`,
-      body: { column, columnCount },
+      method: 'GET',
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/ranges/${rangeAddress}`,
+      qs: { select, operatorId },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

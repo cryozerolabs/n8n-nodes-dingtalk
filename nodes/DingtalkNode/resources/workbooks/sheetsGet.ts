@@ -7,26 +7,32 @@ import type {
 import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { getWorkbook, workbookProps } from './common';
+import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.sheets';
+const OP = 'workbooks.shees.get';
 const showOnly = { show: { operation: [OP] } };
 
-const properties: INodeProperties[] = [...operatorProps(showOnly), ...workbookProps(showOnly)];
+const properties: INodeProperties[] = [
+  ...operatorProps(showOnly),
+  ...workbookProps(showOnly),
+  ...sheetProps(showOnly),
+];
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 获取所有工作表',
-  description: '获取指定表格中所有的工作表信息',
+  name: '获取工作表',
+  description: '获取某个工作表属性',
   properties,
 
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const workbookId = getWorkbook(this, itemIndex);
+    const sheetId = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
 
     const resp = await request.call(this, {
       method: 'GET',
-      url: `/doc/workbooks/${workbookId}/sheets?operatorId=${operatorId}`,
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}`,
+      qs: { operatorId },
     });
     const out: IDataObject = resp as unknown as IDataObject;
 

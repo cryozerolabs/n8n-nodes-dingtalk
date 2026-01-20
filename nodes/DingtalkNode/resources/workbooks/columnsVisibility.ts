@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { getSheet, getWorkbook, sheetProps, workbookProps } from './common';
 
-const OP = 'doc.workbooks.columns.visibility';
+const OP = 'workbooks.columns.visibility';
 const showOnly = { show: { operation: [OP] } };
 
 const properties: INodeProperties[] = [
@@ -55,7 +55,7 @@ const properties: INodeProperties[] = [
 
 const op: OperationDef = {
   value: OP,
-  name: '表格 设置列隐藏或显示',
+  name: '设置列隐藏或显示',
   description: '设置列的可见性',
   properties,
 
@@ -69,7 +69,8 @@ const op: OperationDef = {
 
     const resp = await request.call(this, {
       method: 'POST',
-      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/setColumnsVisibility?operatorId=${operatorId}`,
+      url: `/doc/workbooks/${workbookId}/sheets/${sheetId}/setColumnsVisibility`,
+      qs: { operatorId },
       body: { column, columnCount, visibility },
     });
     const out: IDataObject = resp as unknown as IDataObject;
