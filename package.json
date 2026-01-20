@@ -1,7 +1,7 @@
 {
   "name": "@cryozerolabs/n8n-nodes-dingtalk",
   "version": "0.5.1",
-  "description": "Dingtalk(钉钉) nodes for n8n: Stream(事件订阅)、Notable(AI表格)、User API、自定义机器人发送消息",
+  "description": "Dingtalk(钉钉) nodes for n8n: Stream(事件订阅)、Notable(AI表格)、User API、自定义机器人发送消息、Workbook(表格)",
   "license": "MIT",
   "keywords": [
     "n8n-community-node-package",
@@ -21,7 +21,8 @@
     "钉钉自定义机器人",
     "文档",
     "OA审批",
-    "钉钉专业版"
+    "钉钉专业版",
+    "表格"
   ],
   "author": {
     "name": "williamsuen",
