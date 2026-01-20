@@ -1,6 +1,7 @@
 import type {
   IAuthenticate,
   ICredentialDataDecryptedObject,
+  ICredentialTestRequest,
   ICredentialType,
   IDataObject,
   IHttpRequestOptions,
@@ -13,7 +14,16 @@ export class DingtalkRobotApi implements ICredentialType {
 
   displayName = 'DingTalk Robot API';
 
-  icon = 'file:icon.png' as const;
+  test: ICredentialTestRequest = {
+    request: {
+      method: 'POST',
+      baseURL: 'https://oapi.dingtalk.com/robot/send',
+      url: '',
+      body: {},
+    },
+  };
+
+  icon = 'file:icon.svg' as const;
 
   documentationUrl =
     'https://open.dingtalk.com/document/development/custom-robots-send-group-messages';

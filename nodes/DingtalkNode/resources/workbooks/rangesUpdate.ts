@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'rangeAddress',
     displayName: 'Range地址',
+    name: 'rangeAddress',
     type: 'string',
     default: '',
     placeholder: '例如: B2:C3',
@@ -27,8 +27,8 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'jsonBody',
     displayName: '请求体JSON',
+    name: 'jsonBody',
     type: 'json',
     default: JSON.stringify(
       {

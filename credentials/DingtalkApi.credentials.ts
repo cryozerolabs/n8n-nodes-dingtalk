@@ -13,7 +13,7 @@ export class DingtalkApi implements ICredentialType {
 
   displayName = 'Dingtalk API';
 
-  icon = 'file:icon.png' as const;
+  icon = 'file:icon.svg' as const;
 
   // Link to your community node's README
   documentationUrl =

@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'row',
     displayName: '指定行的游标',
+    name: 'row',
     type: 'number',
     default: 0,
     required: true,
@@ -26,8 +26,8 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'rowCount',
     displayName: '插入行的数量',
+    name: 'rowCount',
     type: 'number',
     default: 1,
     required: true,

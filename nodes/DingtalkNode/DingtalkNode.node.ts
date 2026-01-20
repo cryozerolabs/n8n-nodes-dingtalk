@@ -88,8 +88,7 @@ export class DingtalkNode implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'Dingtalk Node',
     name: 'dingtalkNode',
-
-    icon: 'file:icon.png',
+    icon: 'file:icon.svg',
     group: ['transform'],
     version: 1,
     // 副标题: 显示 “资源 · 操作短名”

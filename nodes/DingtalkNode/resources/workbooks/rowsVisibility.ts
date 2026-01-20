@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'row',
     displayName: '要显示或者隐藏的第一行的游标',
+    name: 'row',
     type: 'number',
     default: 0,
     required: true,
@@ -26,16 +26,16 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'rowCount',
     displayName: '要显示或隐藏的行的数量',
+    name: 'rowCount',
     type: 'number',
     default: 1,
     required: true,
     displayOptions: showOnly,
   },
   {
-    name: 'visibility',
     displayName: '可见性',
+    name: 'visibility',
     type: 'options',
     options: [
       {

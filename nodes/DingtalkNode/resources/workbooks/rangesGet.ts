@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'rangeAddress',
     displayName: 'Range地址',
+    name: 'rangeAddress',
     type: 'string',
     default: '',
     placeholder: '例如: A3:C3',
@@ -27,8 +27,8 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'select',
     displayName: '筛选要返回的字段',
+    name: 'select',
     type: 'string',
     default: 'values',
     placeholder: '例如: values,formulas',

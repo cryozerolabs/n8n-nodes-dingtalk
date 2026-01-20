@@ -64,8 +64,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'headerRange',
     displayName: '标题行范围',
+    name: 'headerRange',
     type: 'string',
     default: '',
     placeholder: '例如: A1:C1',

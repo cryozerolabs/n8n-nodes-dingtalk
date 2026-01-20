@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'rangeAddress',
     displayName: '需要清除的单元格范围',
+    name: 'rangeAddress',
     type: 'string',
     default: '',
     placeholder: '例如: B2:C3',

@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'column',
     displayName: '要显示或隐藏的第一列的游标',
+    name: 'column',
     type: 'number',
     default: 0,
     required: true,
@@ -26,16 +26,16 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'columnCount',
     displayName: '要显示或隐藏的列的数量',
+    name: 'columnCount',
     type: 'number',
     default: 1,
     required: true,
     displayOptions: showOnly,
   },
   {
-    name: 'visibility',
     displayName: '可见性',
+    name: 'visibility',
     type: 'options',
     options: [
       {

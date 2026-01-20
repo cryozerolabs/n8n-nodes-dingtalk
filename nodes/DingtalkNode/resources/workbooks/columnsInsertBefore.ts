@@ -17,8 +17,8 @@ const properties: INodeProperties[] = [
   ...workbookProps(showOnly),
   ...sheetProps(showOnly),
   {
-    name: 'column',
     displayName: '指定列的游标',
+    name: 'column',
     type: 'number',
     default: 0,
     required: true,
@@ -26,8 +26,8 @@ const properties: INodeProperties[] = [
     displayOptions: showOnly,
   },
   {
-    name: 'columnCount',
     displayName: '插入列的数量',
+    name: 'columnCount',
     type: 'number',
     default: 1,
     required: true,
