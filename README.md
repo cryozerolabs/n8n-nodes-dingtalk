@@ -243,6 +243,10 @@
 
 ## 📋 版本历史
 
+## v0.6.1
+
+- 修复：将`streamPushTrigger`中的`reconnectTimer`和`heartbeatTimer`替换为`cron-scheduled pings`和`explicit connection state management`, 主动发送ping包，避免连接断开。
+
 ## v0.6.0
 
 - 新增：钉钉表格操作，包括工作表、行列、单元格区域
