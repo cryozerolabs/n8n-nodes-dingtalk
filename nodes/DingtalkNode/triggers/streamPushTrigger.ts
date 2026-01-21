@@ -1,3 +1,4 @@
+/* eslint-disable @n8n/community-nodes/no-restricted-globals */
 import {
   NodeOperationError,
   type CronExpression,
