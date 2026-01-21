@@ -11,7 +11,7 @@ import {
 // whenever the socket closes or fails.
 const GATEWAY_URL = 'https://api.dingtalk.com/v1.0/gateway/connections/open';
 const USER_AGENT = 'n8n-nodes-dingtalk-trigger';
-const CLIENT_PING_INTERVAL_SECONDS = 10;
+const CLIENT_PING_INTERVAL_SECONDS = 30;
 const CRON_EXPRESSION: CronExpression = `*/${CLIENT_PING_INTERVAL_SECONDS} * * * * *`;
 const DEBUG_STREAM = false;
 
