@@ -30,48 +30,35 @@ const formProperties: INodeProperties[] = [
     name: 'userIds',
     required: true,
     displayOptions: showOnly,
-    description: '接收消息的用户ID列表，最大长度20',
+    placeholder: 'user001,user002',
+    description: '接收机器人消息的用户的userId列表，每次最多传20个',
   }),
   {
     displayName: '消息类型',
     name: 'msgtype',
     type: 'options',
     default: 'text',
-    description: '消息类型',
     options: [
       { name: '文本类型消息', value: 'text' },
       { name: '链接类型消息', value: 'link' },
       { name: 'Markdown类型消息', value: 'markdown' },
       { name: 'ActionCard类型消息', value: 'actionCard' },
       { name: 'FeedCard类型消息', value: 'feedCard' },
-      { name: '自定义消息模板', value: 'custom' },
     ],
     displayOptions: showOnly,
-  },
-
-  // custom
-  {
-    displayName: '消息模板Key',
-    name: 'msgKey',
-    type: 'string',
-    default: 'sampleMarkdown',
-    required: true,
-    displayOptions: {
-      show: {
-        operation: [OP],
-        msgtype: ['custom'],
-      },
-    },
-    description: '消息模板Key，例如sampleMarkdown',
   },
   {
     displayName: '消息参数',
     name: 'msgParam',
     type: 'json',
-    default: JSON.stringify({
-      text: "hello text",
-      title: "hello title"
-    }, null, 2),
+    default: JSON.stringify(
+      {
+        text: 'hello text',
+        title: 'hello title',
+      },
+      null,
+      2,
+    ),
     required: true,
     displayOptions: {
       show: {
@@ -382,8 +369,8 @@ const properties: INodeProperties[] = [
         userIds: ['user123'],
         msgKey: 'sampleMarkdown',
         msgParam: JSON.stringify({
-          text: "hello text",
-          title: "hello title"
+          text: 'hello text',
+          title: 'hello title',
         }),
       },
       null,
@@ -447,21 +434,9 @@ const op: OperationDef = {
             msgParam.btns = buttons.button as IDataObject[];
           }
         } else if (msgtype === 'feedCard') {
-           msgKey = 'sampleFeedCard';
-           const links = ctx.getNodeParameter('links', idx, []) as IDataObject;
-           msgParam = { links: links.link as IDataObject[] };
-        } else if (msgtype === 'custom') {
-           msgKey = ctx.getNodeParameter('msgKey', idx, '') as string;
-           const param = ctx.getNodeParameter('msgParam', idx, undefined) as string | object;
-           if (typeof param === 'string') {
-             try {
-                msgParam = JSON.parse(param);
-             } catch (e) {
-                msgParam = {};
-             }
-           } else {
-             msgParam = param as IDataObject;
-           }
+          msgKey = 'sampleFeedCard';
+          const links = ctx.getNodeParameter('links', idx, []) as IDataObject;
+          msgParam = { links: links.link as IDataObject[] };
         }
 
         const body: IDataObject = {
