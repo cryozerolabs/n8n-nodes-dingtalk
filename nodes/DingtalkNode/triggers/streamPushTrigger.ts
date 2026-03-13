@@ -21,7 +21,7 @@ interface DingtalkCredentials {
   clientSecret?: string;
 }
 
-type DownstreamKind = 'SYSTEM' | 'EVENT';
+type DownstreamKind = 'SYSTEM' | 'EVENT' | 'CALLBACK';
 
 interface DownstreamHeaders {
   appId: string;
@@ -86,7 +86,10 @@ export async function runStreamPushTrigger(
     );
   }
 
-  const subscriptions = [{ type: 'EVENT', topic: '*' }] as Array<{ type: string; topic: string }>;
+  const subscriptions = [
+    { type: 'EVENT', topic: '*' },
+    { type: 'CALLBACK', topic: '/v1.0/im/bot/messages/get' },
+  ] as Array<{ type: string; topic: string }>;
 
   let socket: WebSocket | null = null;
   let pendingSocket: WebSocket | null = null;
@@ -215,6 +218,27 @@ export async function runStreamPushTrigger(
             topic: message.headers.topic,
           });
           // Ask DingTalk to retry if we failed to emit the item; avoids dropping the event silently.
+          sendEventAck(message.headers, {
+            status: 'LATER',
+            message: errMessage,
+          });
+        }
+        break;
+      case 'CALLBACK':
+        logDebug('DingTalk stream callback received', {
+          topic: message.headers.topic,
+          connectionId: message.headers.connectionId,
+          messageId: message.headers.messageId,
+        });
+        try {
+          handleEventMessage(message);
+        } catch (error) {
+          const errMessage =
+            error instanceof Error ? error.message : 'Failed to forward DingTalk callback payload.';
+          this.logger?.error?.('DingTalk stream callback handling failed', {
+            error: errMessage,
+            topic: message.headers.topic,
+          });
           sendEventAck(message.headers, {
             status: 'LATER',
             message: errMessage,
