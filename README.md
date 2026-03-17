@@ -243,9 +243,15 @@
 
 ## 📋 版本历史
 
-## v0.7.0
+### v0.7.1
+
+- 修复：Stream模式钉钉机器人无法接收 CALLBACK 类型消息的问题 (#27)
+  感谢 [@daixin](https://github.com/daixin) 的贡献。
+
+### v0.7.0
 
 - 新增：批量发送人与机器人会话中机器人消息
+  感谢 [@daixin](https://github.com/daixin) 的贡献。
 
 ## v0.6.1
 
@@ -374,6 +380,12 @@ pnpm release
 - **测试环境**默认运行在 `http://localhost:5678`
 - 详细的开发文档请参考 [n8n 社区节点开发指南](https://docs.n8n.io/integrations/creating-nodes/)
 
+## 🤝 贡献者 (Contributors)
+
+感谢以下开发者对本项目做出的贡献：
+
+- [daixin](https://github.com/daixin)
+
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
@@ -383,8 +395,5 @@ pnpm release
 钉钉, DingTalk, n8n, workflow, automation, 工作流, 自动化, AI表格, 企业应用, API, 集成, 阿里巴巴
 
 ---
-
-**开发者**: [CryoZero Labs](https://github.com/cryozerolabs)  
-**维护状态**: ✅ 积极维护
 
 如果这个节点对你有帮助，请给我们一个 ⭐ Star！
