@@ -14,6 +14,7 @@ import authBundle from './resources/auth';
 import docBundle from './resources/doc';
 import notableBundle from './resources/notable';
 import robotBundle from './resources/robot';
+import todoBundle from './resources/todo';
 import userBundle from './resources/user';
 import workflowBundle from './resources/workflow';
 import workbooksBundle from './resources/workbooks';
@@ -24,6 +25,7 @@ const bundles: ResourceBundle[] = [
   docBundle,
   notableBundle,
   robotBundle,
+  todoBundle,
   userBundle,
   workflowBundle,
   workbooksBundle,
@@ -146,7 +148,7 @@ export class DingtalkNode implements INodeType {
           if ((error as NodeOperationError).context) {
             (error as NodeOperationError).context!.itemIndex = i;
           }
-          throw error;
+          throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
         }
       }
     }
