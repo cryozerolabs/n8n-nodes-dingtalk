@@ -1,0 +1,179 @@
+import type {
+  IExecuteFunctions,
+  IDataObject,
+  INodeExecutionData,
+  INodeProperties,
+} from 'n8n-workflow';
+import type { OperationDef } from '../../../shared/operation';
+import { request } from '../../../shared/request';
+import { bodyProps, getBodyData } from '../../../shared/properties/body';
+import { commaSeparatedStringProperty } from '../../../shared/properties/commaSeparatedString';
+import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
+import {
+  buildUpdateTaskBody,
+  encodePath,
+  getTaskId,
+  getUnionId,
+  taskIdProperty,
+  unionIdProperty,
+} from './common';
+
+const OP = 'todo.task.update';
+const showOnly = { show: { operation: [OP] } };
+
+const formProperties: INodeProperties[] = [
+  {
+    displayName: '标题',
+    name: 'subject',
+    type: 'string',
+    default: '',
+    displayOptions: showOnly,
+  },
+  {
+    displayName: '描述',
+    name: 'description',
+    type: 'string',
+    typeOptions: {
+      rows: 3,
+    },
+    default: '',
+    displayOptions: showOnly,
+  },
+  {
+    displayName: '截止时间',
+    name: 'dueTime',
+    type: 'string',
+    default: '',
+    placeholder: '2026-07-17T18:30:00+08:00 或 1784284200000',
+    description: '支持 ISO-8601 时间字符串或毫秒时间戳。留空则不更新。',
+    displayOptions: showOnly,
+  },
+  commaSeparatedStringProperty({
+    displayName: '执行人 Union ID 列表',
+    name: 'executorIds',
+    placeholder: 'unionId1, unionId2',
+    displayOptions: showOnly,
+  }),
+  commaSeparatedStringProperty({
+    displayName: '参与人 Union ID 列表',
+    name: 'participantIds',
+    placeholder: 'unionId1, unionId2',
+    displayOptions: showOnly,
+  }),
+  {
+    displayName: '移动端详情页 URL',
+    name: 'detailUrl',
+    type: 'string',
+    default: '',
+    description: '留空则不更新。',
+    displayOptions: showOnly,
+  },
+  {
+    displayName: 'PC 端详情页 URL',
+    name: 'pcDetailUrl',
+    type: 'string',
+    default: '',
+    description: '留空时复用移动端详情页 URL。',
+    displayOptions: showOnly,
+  },
+  {
+    displayName: '优先级',
+    name: 'priority',
+    type: 'options',
+    default: '',
+    options: [
+      { name: '不更新', value: '' },
+      { name: '低', value: 10 },
+      { name: '普通', value: 20 },
+      { name: '较高', value: 30 },
+      { name: '紧急', value: 40 },
+    ],
+    displayOptions: showOnly,
+  },
+  {
+    displayName: '完成状态',
+    name: 'doneStatus',
+    type: 'options',
+    default: 'unchanged',
+    options: [
+      { name: '不更新', value: 'unchanged' },
+      { name: '标记未完成', value: 'undone' },
+      { name: '标记完成', value: 'done' },
+    ],
+    displayOptions: showOnly,
+  },
+];
+
+const properties: INodeProperties[] = [
+  unionIdProperty(showOnly),
+  taskIdProperty(showOnly),
+  ...operatorProps(showOnly),
+  ...bodyProps(showOnly, {
+    defaultMode: 'form',
+    defaultJsonBody: JSON.stringify(
+      {
+        subject: '更新后的标题',
+        description: '更新后的描述',
+        executorIds: ['executorUnionId'],
+        participantIds: ['participantUnionId'],
+        detailUrl: {
+          appUrl: 'https://example.com/tasks/task-001',
+          pcUrl: 'https://example.com/tasks/task-001',
+        },
+        dueTime: 1784284200000,
+        priority: 20,
+        done: false,
+      },
+      null,
+      2,
+    ),
+    jsonDescription:
+      '请求体 JSON 数据。<a href="https://open.dingtalk.com/document/development/update-dingtalk-to-do-task" target="_blank">查看官方 API 文档</a>',
+    formProperties,
+  }),
+];
+
+const op: OperationDef = {
+  value: OP,
+  name: '更新待办任务',
+  description: '更新钉钉工作待办任务',
+  properties,
+
+  async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
+    const unionId = getUnionId(this, itemIndex);
+    const taskId = getTaskId(this, itemIndex);
+    const operatorId = await getOperatorId(this, itemIndex);
+
+    const body = getBodyData(this, itemIndex, {
+      formBuilder: (ctx: IExecuteFunctions, idx: number) => {
+        const doneStatus = ctx.getNodeParameter('doneStatus', idx, 'unchanged') as string;
+        const done =
+          doneStatus === 'done' ? true : doneStatus === 'undone' ? false : undefined;
+
+        return buildUpdateTaskBody({
+          subject: ctx.getNodeParameter('subject', idx, undefined),
+          description: ctx.getNodeParameter('description', idx, undefined),
+          dueTime: ctx.getNodeParameter('dueTime', idx, undefined),
+          executorIds: ctx.getNodeParameter('executorIds', idx, undefined),
+          participantIds: ctx.getNodeParameter('participantIds', idx, undefined),
+          detailUrl: ctx.getNodeParameter('detailUrl', idx, undefined),
+          pcDetailUrl: ctx.getNodeParameter('pcDetailUrl', idx, undefined),
+          priority: ctx.getNodeParameter('priority', idx, undefined),
+          done,
+        });
+      },
+    });
+
+    const resp = await request.call(this, {
+      method: 'PUT',
+      url: `/todo/users/${encodePath(unionId)}/tasks/${encodePath(taskId)}`,
+      qs: { operatorId },
+      body,
+    });
+
+    const out: IDataObject = resp as unknown as IDataObject;
+    return { json: out, pairedItem: { item: itemIndex } };
+  },
+};
+
+export default op;
