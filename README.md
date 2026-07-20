@@ -243,6 +243,13 @@
 
 ## 📋 版本历史
 
+### v0.9.0
+
+- 新增：待办任务管理，支持创建、按任务 ID 或业务来源 ID 查询、分页查询、更新、更新执行人完成状态和删除
+- 优化：保留并展示更完整的钉钉 API 错误信息
+
+感谢 [@songlipeng2003](https://github.com/songlipeng2003) 对本次更新的贡献。
+
 ### v0.8.0
 
 - 新增：下载机器人接收消息的文件内容
@@ -390,6 +397,7 @@ pnpm release
 感谢以下开发者对本项目做出的贡献：
 
 - [daixin](https://github.com/daixin)
+- [songlipeng2003](https://github.com/songlipeng2003)
 
 ## 📄 许可证
 
