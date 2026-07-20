@@ -1,4 +1,10 @@
-import type { IExecuteFunctions, ILoadOptionsFunctions, IHttpRequestOptions } from 'n8n-workflow';
+import { NodeApiError } from 'n8n-workflow';
+import type {
+  IExecuteFunctions,
+  ILoadOptionsFunctions,
+  IHttpRequestOptions,
+  JsonObject,
+} from 'n8n-workflow';
 
 type Ctx = IExecuteFunctions | ILoadOptionsFunctions;
 type RequestExtras = {
@@ -157,7 +163,7 @@ export async function request<T = unknown>(
       const retry = await originRequest.call(this, options, credentialType, true);
       return retry as T;
     }
-    // 非鉴权问题直接抛出
-    throw err;
+    // 非鉴权问题包装为 n8n API 错误，保留原始上下文供 UI 展示
+    throw new NodeApiError(this.getNode(), err as JsonObject);
   }
 }

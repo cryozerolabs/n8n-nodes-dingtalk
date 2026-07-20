@@ -5,7 +5,7 @@
 
 这是一个钉钉（DingTalk）的 n8n 社区节点，让你可以在 n8n 工作流中集成钉钉开放平台的各种 API。
 
-钉钉是阿里巴巴集团打造的企业级智能移动办公平台，为全球企业组织提供一站式的数字化办公解决方案。本节点基于钉钉开放平台 API 开发，支持 Stream模式监听事件订阅、AI 表格、钉钉机器人、OA审批、文档、用户管理、身份验证等核心功能。
+钉钉是阿里巴巴集团打造的企业级智能移动办公平台，为全球企业组织提供一站式的数字化办公解决方案。本节点基于钉钉开放平台 API 开发，支持 Stream模式监听事件订阅、AI 表格、钉钉机器人、OA审批、待办任务、文档、用户管理、身份验证等核心功能。
 
 > ⚡ 使用教程、最佳实践等详尽说明请访问项目 Wiki：<https://github.com/cryozerolabs/n8n-nodes-dingtalk/wiki>
 
@@ -94,6 +94,16 @@
 - 获取审批钉盘空间信息
 - 获取指定用户可见的审批表单列表
 - [钉钉专业版💎]更新流程表单审批实例
+
+### ✅ 待办任务 (Todo)
+
+- 创建待办任务
+- 查询企业待办列表
+- 获取待办任务详情
+- 按业务系统唯一 ID 获取待办详情
+- 更新待办任务
+- 更新执行人完成状态
+- 删除待办任务
 
 ### 🤖 机器人（robot）
 
@@ -243,6 +253,13 @@
 
 ## 📋 版本历史
 
+### v0.9.0
+
+- 新增：待办任务管理，支持创建、按任务 ID 或业务来源 ID 查询、分页查询、更新、更新执行人完成状态和删除
+- 优化：保留并展示更完整的钉钉 API 错误信息
+
+感谢 [@songlipeng2003](https://github.com/songlipeng2003) 对本次更新的贡献。
+
 ### v0.8.0
 
 - 新增：下载机器人接收消息的文件内容
@@ -357,13 +374,10 @@ v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检
 git clone https://github.com/cryozerolabs/n8n-nodes-dingtalk.git
 cd n8n-nodes-dingtalk
 
-# 2. 安装 n8n-node 开发工具（如果尚未安装）
-npm i -g @n8n/node-cli
+# 2. 安装依赖
+npm ci
 
-# 3. 安装依赖
-pnpm i
-
-# 4. 设置开发环境变量（可选，用于调试）
+# 3. 设置开发环境变量（可选，用于调试）
 export N8N_LOG_LEVEL=debug
 export N8N_LOG_OUTPUT=console,file
 export N8N_LOG_FILE_LOCATION="$PWD/logs/n8n.log"
@@ -372,17 +386,20 @@ export N8N_LOG_FILE_SIZE_MAX=50
 # 只看当前滚动的新增日志
 tail -n 200 -F logs/n8n.log
 
-# 5. 启动 n8n 开发服务器
-pnpm dev
+# 4. 启动 n8n 开发服务器
+npm run dev
 
-# 6. 发布
-pnpm release
+# 5. 发布（在 main 分支通过 CI 后）
+npm run release
+# 按提示选择版本：小修复选 patch（例如 0.9.0 → 0.9.1），新功能选 minor
 ```
 
 **开发提示：**
 
 - **`n8n-node dev`** 会自动启动一个包含当前节点的 n8n 测试环境
 - **测试环境**默认运行在 `http://localhost:5678`
+- `npm run release` 会自动更新版本与 CHANGELOG、提交、打 tag、推送并创建 GitHub Release
+- 版本 tag 推送后，GitHub Actions 会将相同版本发布到 npm
 - 详细的开发文档请参考 [n8n 社区节点开发指南](https://docs.n8n.io/integrations/creating-nodes/)
 
 ## 🤝 贡献者 (Contributors)
@@ -390,6 +407,7 @@ pnpm release
 感谢以下开发者对本项目做出的贡献：
 
 - [daixin](https://github.com/daixin)
+- [songlipeng2003](https://github.com/songlipeng2003)
 
 ## 📄 许可证
 
