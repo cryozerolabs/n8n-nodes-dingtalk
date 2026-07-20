@@ -9,7 +9,12 @@ import { request } from '../../../shared/request';
 import { bodyProps, getBodyData } from '../../../shared/properties/body';
 import { commaSeparatedStringProperty } from '../../../shared/properties/commaSeparatedString';
 import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
-import { buildCreateTaskBody, encodePath, getUnionId, unionIdProperty } from './common';
+import {
+  buildCreateTaskBody,
+  encodePath,
+  getUnionId,
+  unionIdProperty,
+} from './common';
 
 const OP = 'todo.task.create';
 const showOnly = { show: { operation: [OP] } };
@@ -37,7 +42,7 @@ const formProperties: INodeProperties[] = [
     name: 'creatorId',
     type: 'string',
     default: '',
-    description: '待办创建人的 unionId。留空时使用路径中的用户 unionId。',
+    description: '待办创建人的 unionId。留空时使用操作人 unionId。',
     displayOptions: showOnly,
   },
   {
@@ -161,7 +166,7 @@ const op: OperationDef = {
         buildCreateTaskBody({
           sourceId: ctx.getNodeParameter('sourceId', idx, undefined),
           subject: ctx.getNodeParameter('subject', idx, undefined),
-          creatorId: ctx.getNodeParameter('creatorId', idx, '') || unionId,
+          creatorId: ctx.getNodeParameter('creatorId', idx, '') || operatorId,
           description: ctx.getNodeParameter('description', idx, undefined),
           dueTime: ctx.getNodeParameter('dueTime', idx, undefined),
           executorIds: ctx.getNodeParameter('executorIds', idx, undefined),

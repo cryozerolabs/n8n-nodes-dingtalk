@@ -35,15 +35,15 @@ test('buildCreateTaskBody maps form values to DingTalk task payload', () => {
   });
 });
 
-test('buildUpdateTaskBody omits unsupported and blank values and keeps false done status', () => {
+test('buildUpdateTaskBody omits blank optional values and keeps false done status', () => {
   const body = buildUpdateTaskBody({
     subject: '  ',
     description: '',
     dueTime: '',
-    detailUrl: 'https://example.com/task/source-1',
+    detailUrl: '',
     executorIds: '',
     participantIds: '',
-    priority: 40,
+    priority: '',
     done: false,
   });
 

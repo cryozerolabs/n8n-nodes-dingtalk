@@ -5,7 +5,6 @@ import {
   type INodeProperties,
   type INodeExecutionData,
   type IExecuteFunctions,
-  NodeApiError,
   NodeOperationError,
   ApplicationError,
 } from 'n8n-workflow';
@@ -146,11 +145,8 @@ export class DingtalkNode implements INodeType {
         if (this.continueOnFail()) {
           results.push({ json: { error: (error as Error).message }, pairedItem: { item: i } });
         } else {
-          if (error instanceof NodeApiError || error instanceof NodeOperationError) {
-            error.context.itemIndex = i;
-            // Preserve the original node error, including HTTP status and API response context.
-            // eslint-disable-next-line @n8n/community-nodes/require-node-api-error
-            throw error;
+          if ((error as NodeOperationError).context) {
+            (error as NodeOperationError).context!.itemIndex = i;
           }
           throw new NodeOperationError(this.getNode(), error as Error, { itemIndex: i });
         }
