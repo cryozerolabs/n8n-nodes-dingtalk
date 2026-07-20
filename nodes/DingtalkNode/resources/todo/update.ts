@@ -61,36 +61,6 @@ const formProperties: INodeProperties[] = [
     displayOptions: showOnly,
   }),
   {
-    displayName: '移动端详情页 URL',
-    name: 'detailUrl',
-    type: 'string',
-    default: '',
-    description: '留空则不更新。',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: 'PC 端详情页 URL',
-    name: 'pcDetailUrl',
-    type: 'string',
-    default: '',
-    description: '留空时复用移动端详情页 URL。',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '优先级',
-    name: 'priority',
-    type: 'options',
-    default: '',
-    options: [
-      { name: '不更新', value: '' },
-      { name: '低', value: 10 },
-      { name: '普通', value: 20 },
-      { name: '较高', value: 30 },
-      { name: '紧急', value: 40 },
-    ],
-    displayOptions: showOnly,
-  },
-  {
     displayName: '完成状态',
     name: 'doneStatus',
     type: 'options',
@@ -116,12 +86,7 @@ const properties: INodeProperties[] = [
         description: '更新后的描述',
         executorIds: ['executorUnionId'],
         participantIds: ['participantUnionId'],
-        detailUrl: {
-          appUrl: 'https://example.com/tasks/task-001',
-          pcUrl: 'https://example.com/tasks/task-001',
-        },
         dueTime: 1784284200000,
-        priority: 20,
         done: false,
       },
       null,
@@ -147,8 +112,7 @@ const op: OperationDef = {
     const body = getBodyData(this, itemIndex, {
       formBuilder: (ctx: IExecuteFunctions, idx: number) => {
         const doneStatus = ctx.getNodeParameter('doneStatus', idx, 'unchanged') as string;
-        const done =
-          doneStatus === 'done' ? true : doneStatus === 'undone' ? false : undefined;
+        const done = doneStatus === 'done' ? true : doneStatus === 'undone' ? false : undefined;
 
         return buildUpdateTaskBody({
           subject: ctx.getNodeParameter('subject', idx, undefined),
@@ -156,9 +120,6 @@ const op: OperationDef = {
           dueTime: ctx.getNodeParameter('dueTime', idx, undefined),
           executorIds: ctx.getNodeParameter('executorIds', idx, undefined),
           participantIds: ctx.getNodeParameter('participantIds', idx, undefined),
-          detailUrl: ctx.getNodeParameter('detailUrl', idx, undefined),
-          pcDetailUrl: ctx.getNodeParameter('pcDetailUrl', idx, undefined),
-          priority: ctx.getNodeParameter('priority', idx, undefined),
           done,
         });
       },

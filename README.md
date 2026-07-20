@@ -374,13 +374,10 @@ v0.3.0 重构了 AI 表格记录操作的参数模型，请在升级后逐一检
 git clone https://github.com/cryozerolabs/n8n-nodes-dingtalk.git
 cd n8n-nodes-dingtalk
 
-# 2. 安装 n8n-node 开发工具（如果尚未安装）
-npm i -g @n8n/node-cli
+# 2. 安装依赖
+npm ci
 
-# 3. 安装依赖
-pnpm i
-
-# 4. 设置开发环境变量（可选，用于调试）
+# 3. 设置开发环境变量（可选，用于调试）
 export N8N_LOG_LEVEL=debug
 export N8N_LOG_OUTPUT=console,file
 export N8N_LOG_FILE_LOCATION="$PWD/logs/n8n.log"
@@ -389,17 +386,20 @@ export N8N_LOG_FILE_SIZE_MAX=50
 # 只看当前滚动的新增日志
 tail -n 200 -F logs/n8n.log
 
-# 5. 启动 n8n 开发服务器
-pnpm dev
+# 4. 启动 n8n 开发服务器
+npm run dev
 
-# 6. 发布
-pnpm release
+# 5. 发布（在 main 分支通过 CI 后）
+# 小修复使用 patch（例如 0.9.0 → 0.9.1），新功能使用 minor
+npm version patch
+git push origin main --follow-tags
 ```
 
 **开发提示：**
 
 - **`n8n-node dev`** 会自动启动一个包含当前节点的 n8n 测试环境
 - **测试环境**默认运行在 `http://localhost:5678`
+- 推送版本 tag 后，GitHub Actions 会按 `package.json` 中的相同版本发布到 npm
 - 详细的开发文档请参考 [n8n 社区节点开发指南](https://docs.n8n.io/integrations/creating-nodes/)
 
 ## 🤝 贡献者 (Contributors)
