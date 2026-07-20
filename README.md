@@ -390,16 +390,16 @@ tail -n 200 -F logs/n8n.log
 npm run dev
 
 # 5. 发布（在 main 分支通过 CI 后）
-# 小修复使用 patch（例如 0.9.0 → 0.9.1），新功能使用 minor
-npm version patch
-git push origin main --follow-tags
+npm run release
+# 按提示选择版本：小修复选 patch（例如 0.9.0 → 0.9.1），新功能选 minor
 ```
 
 **开发提示：**
 
 - **`n8n-node dev`** 会自动启动一个包含当前节点的 n8n 测试环境
 - **测试环境**默认运行在 `http://localhost:5678`
-- 推送版本 tag 后，GitHub Actions 会按 `package.json` 中的相同版本发布到 npm
+- `npm run release` 会自动更新版本与 CHANGELOG、提交、打 tag、推送并创建 GitHub Release
+- 版本 tag 推送后，GitHub Actions 会将相同版本发布到 npm
 - 详细的开发文档请参考 [n8n 社区节点开发指南](https://docs.n8n.io/integrations/creating-nodes/)
 
 ## 🤝 贡献者 (Contributors)
