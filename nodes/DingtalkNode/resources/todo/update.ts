@@ -8,7 +8,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { bodyProps, getBodyData } from '../../../shared/properties/body';
 import { commaSeparatedStringProperty } from '../../../shared/properties/commaSeparatedString';
-import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
+import { getOptionalOperatorId, operatorProps } from '../../../shared/properties/operator';
 import {
   buildUpdateTaskBody,
   encodePath,
@@ -61,36 +61,6 @@ const formProperties: INodeProperties[] = [
     displayOptions: showOnly,
   }),
   {
-    displayName: '移动端详情页 URL',
-    name: 'detailUrl',
-    type: 'string',
-    default: '',
-    description: '留空则不更新。',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: 'PC 端详情页 URL',
-    name: 'pcDetailUrl',
-    type: 'string',
-    default: '',
-    description: '留空时复用移动端详情页 URL。',
-    displayOptions: showOnly,
-  },
-  {
-    displayName: '优先级',
-    name: 'priority',
-    type: 'options',
-    default: '',
-    options: [
-      { name: '不更新', value: '' },
-      { name: '低', value: 10 },
-      { name: '普通', value: 20 },
-      { name: '较高', value: 30 },
-      { name: '紧急', value: 40 },
-    ],
-    displayOptions: showOnly,
-  },
-  {
     displayName: '完成状态',
     name: 'doneStatus',
     type: 'options',
@@ -107,7 +77,7 @@ const formProperties: INodeProperties[] = [
 const properties: INodeProperties[] = [
   unionIdProperty(showOnly),
   taskIdProperty(showOnly),
-  ...operatorProps(showOnly),
+  ...operatorProps(showOnly, { required: false }),
   ...bodyProps(showOnly, {
     defaultMode: 'form',
     defaultJsonBody: JSON.stringify(
@@ -116,19 +86,14 @@ const properties: INodeProperties[] = [
         description: '更新后的描述',
         executorIds: ['executorUnionId'],
         participantIds: ['participantUnionId'],
-        detailUrl: {
-          appUrl: 'https://example.com/tasks/task-001',
-          pcUrl: 'https://example.com/tasks/task-001',
-        },
         dueTime: 1784284200000,
-        priority: 20,
         done: false,
       },
       null,
       2,
     ),
     jsonDescription:
-      '请求体 JSON 数据。<a href="https://open.dingtalk.com/document/development/update-dingtalk-to-do-task" target="_blank">查看官方 API 文档</a>',
+      '请求体 JSON 数据。<a href="https://open.dingtalk.com/document/development/updates-dingtalk-to-do-tasks" target="_blank">查看官方 API 文档</a>',
     formProperties,
   }),
 ];
@@ -142,7 +107,7 @@ const op: OperationDef = {
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const unionId = getUnionId(this, itemIndex);
     const taskId = getTaskId(this, itemIndex);
-    const operatorId = await getOperatorId(this, itemIndex);
+    const operatorId = await getOptionalOperatorId(this, itemIndex);
 
     const body = getBodyData(this, itemIndex, {
       formBuilder: (ctx: IExecuteFunctions, idx: number) => {
@@ -156,9 +121,6 @@ const op: OperationDef = {
           dueTime: ctx.getNodeParameter('dueTime', idx, undefined),
           executorIds: ctx.getNodeParameter('executorIds', idx, undefined),
           participantIds: ctx.getNodeParameter('participantIds', idx, undefined),
-          detailUrl: ctx.getNodeParameter('detailUrl', idx, undefined),
-          pcDetailUrl: ctx.getNodeParameter('pcDetailUrl', idx, undefined),
-          priority: ctx.getNodeParameter('priority', idx, undefined),
           done,
         });
       },
@@ -167,7 +129,7 @@ const op: OperationDef = {
     const resp = await request.call(this, {
       method: 'PUT',
       url: `/todo/users/${encodePath(unionId)}/tasks/${encodePath(taskId)}`,
-      qs: { operatorId },
+      qs: operatorId ? { operatorId } : undefined,
       body,
     });
 
