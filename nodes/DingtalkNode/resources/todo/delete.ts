@@ -6,7 +6,7 @@ import type {
 } from 'n8n-workflow';
 import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
-import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
+import { getOptionalOperatorId, operatorProps } from '../../../shared/properties/operator';
 import {
   encodePath,
   getTaskId,
@@ -21,7 +21,7 @@ const showOnly = { show: { operation: [OP] } };
 const properties: INodeProperties[] = [
   unionIdProperty(showOnly),
   taskIdProperty(showOnly),
-  ...operatorProps(showOnly),
+  ...operatorProps(showOnly, { required: false }),
 ];
 
 const op: OperationDef = {
@@ -33,12 +33,12 @@ const op: OperationDef = {
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const unionId = getUnionId(this, itemIndex);
     const taskId = getTaskId(this, itemIndex);
-    const operatorId = await getOperatorId(this, itemIndex);
+    const operatorId = await getOptionalOperatorId(this, itemIndex);
 
     const resp = await request.call(this, {
       method: 'DELETE',
       url: `/todo/users/${encodePath(unionId)}/tasks/${encodePath(taskId)}`,
-      qs: { operatorId },
+      qs: operatorId ? { operatorId } : undefined,
     });
 
     const out: IDataObject = resp as unknown as IDataObject;
