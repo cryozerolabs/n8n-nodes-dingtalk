@@ -5,6 +5,10 @@ import {
   INodeProperties,
 } from 'n8n-workflow';
 
+interface OperatorPropsOptions {
+  required?: boolean;
+}
+
 /**
  * 操作人覆盖选项 - boolean 开关
  */
@@ -38,7 +42,10 @@ const operatorIdProperty: INodeProperties = {
  * @param operation 操作名称，用于 displayOptions
  * @returns 包含两个属性的数组：[overrideOperator, operatorId]
  */
-export function operatorProps(displayOptions: IDisplayOptions): INodeProperties[] {
+export function operatorProps(
+  displayOptions: IDisplayOptions,
+  options: OperatorPropsOptions = {},
+): INodeProperties[] {
   return [
     {
       ...overrideOperatorProperty,
@@ -46,6 +53,7 @@ export function operatorProps(displayOptions: IDisplayOptions): INodeProperties[
     },
     {
       ...operatorIdProperty,
+      required: options.required ?? operatorIdProperty.required,
       displayOptions: {
         ...displayOptions,
         show: {
@@ -55,6 +63,12 @@ export function operatorProps(displayOptions: IDisplayOptions): INodeProperties[
       },
     },
   ];
+}
+
+function optionalOperatorId(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
 }
 
 /**
@@ -79,6 +93,23 @@ export async function getOperatorId(ctx: IExecuteFunctions, itemIndex: number): 
   }
 
   return nodeOperatorId;
+}
+
+/**
+ * 在 execute 上下文中获取可选操作人ID
+ */
+export async function getOptionalOperatorId(
+  ctx: IExecuteFunctions,
+  itemIndex: number,
+): Promise<string | undefined> {
+  const overrideOperator = ctx.getNodeParameter('overrideOperator', itemIndex, false) as boolean;
+
+  if (overrideOperator) {
+    return optionalOperatorId(ctx.getNodeParameter('operatorId', itemIndex, ''));
+  }
+
+  const credentials = await ctx.getCredentials('dingtalkApi');
+  return optionalOperatorId(credentials.userUnionId);
 }
 
 /**

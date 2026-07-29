@@ -112,7 +112,7 @@ function buildDetailUrl(input: TodoTaskBodyInput): IDataObject | undefined {
   };
 }
 
-function addOptionalTaskFields(body: IDataObject, input: TodoTaskBodyInput) {
+function addOptionalMutableTaskFields(body: IDataObject, input: TodoTaskBodyInput) {
   addOptionalString(body, 'subject', input.subject);
   addOptionalString(body, 'description', input.description);
 
@@ -124,7 +124,9 @@ function addOptionalTaskFields(body: IDataObject, input: TodoTaskBodyInput) {
 
   const participantIds = splitCommaSeparatedValues(input.participantIds);
   if (participantIds.length > 0) body.participantIds = participantIds;
+}
 
+function addOptionalCreateTaskFields(body: IDataObject, input: TodoTaskBodyInput) {
   const detailUrl = buildDetailUrl(input);
   if (detailUrl) body.detailUrl = detailUrl;
 
@@ -137,7 +139,8 @@ export function buildCreateTaskBody(input: TodoTaskBodyInput): IDataObject {
 
   addOptionalString(body, 'sourceId', input.sourceId);
   addOptionalString(body, 'creatorId', input.creatorId);
-  addOptionalTaskFields(body, input);
+  addOptionalMutableTaskFields(body, input);
+  addOptionalCreateTaskFields(body, input);
 
   if (typeof input.isOnlyShowExecutor === 'boolean') {
     body.isOnlyShowExecutor = input.isOnlyShowExecutor;
@@ -154,7 +157,7 @@ export function buildCreateTaskBody(input: TodoTaskBodyInput): IDataObject {
 
 export function buildUpdateTaskBody(input: TodoTaskBodyInput): IDataObject {
   const body: IDataObject = {};
-  addOptionalTaskFields(body, input);
+  addOptionalMutableTaskFields(body, input);
 
   if (typeof input.done === 'boolean') {
     body.done = input.done;

@@ -9,7 +9,7 @@ import type { OperationDef } from '../../../shared/operation';
 import { request } from '../../../shared/request';
 import { bodyProps, getBodyData } from '../../../shared/properties/body';
 import { commaSeparatedStringProperty } from '../../../shared/properties/commaSeparatedString';
-import { getOperatorId, operatorProps } from '../../../shared/properties/operator';
+import { getOptionalOperatorId, operatorProps } from '../../../shared/properties/operator';
 import {
   buildExecutorStatusBody,
   encodePath,
@@ -43,7 +43,7 @@ const formProperties: INodeProperties[] = [
 const properties: INodeProperties[] = [
   unionIdProperty(showOnly),
   taskIdProperty(showOnly),
-  ...operatorProps(showOnly),
+  ...operatorProps(showOnly, { required: false }),
   ...bodyProps(showOnly, {
     defaultMode: 'form',
     defaultJsonBody: JSON.stringify(
@@ -73,7 +73,7 @@ const op: OperationDef = {
   async run(this: IExecuteFunctions, itemIndex: number): Promise<INodeExecutionData> {
     const unionId = getUnionId(this, itemIndex);
     const taskId = getTaskId(this, itemIndex);
-    const operatorId = await getOperatorId(this, itemIndex);
+    const operatorId = await getOptionalOperatorId(this, itemIndex);
 
     const body = getBodyData(this, itemIndex, {
       formBuilder: (ctx: IExecuteFunctions, idx: number) => {
@@ -92,7 +92,7 @@ const op: OperationDef = {
     const resp = await request.call(this, {
       method: 'PUT',
       url: `/todo/users/${encodePath(unionId)}/tasks/${encodePath(taskId)}/executorStatus`,
-      qs: { operatorId },
+      qs: operatorId ? { operatorId } : undefined,
       body,
     });
 
