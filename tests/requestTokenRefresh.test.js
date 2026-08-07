@@ -9,6 +9,12 @@ const USER_GET_OPTIONS = {
   body: { userid: 'user-1' },
 };
 
+const USER_GET_BY_MOBILE_OPTIONS = {
+  method: 'POST',
+  url: 'https://oapi.dingtalk.com/topapi/v2/user/getbymobile',
+  body: { mobile: '13800000000' },
+};
+
 function createContext(responses) {
   const calls = [];
 
@@ -76,6 +82,36 @@ test('uses the structured errcode when the error message omits token details', a
 
   assert.deepEqual(result, { errcode: 0, result: { userid: 'user-1' } });
   assert.equal(calls.length, 2);
+});
+
+test('uses the structured sub_code returned by legacy APIs', async () => {
+  const { calls, context } = createContext([
+    { errcode: 88, sub_code: '40014', sub_msg: 'request failed' },
+    { errcode: 0, result: { userid: 'user-1' } },
+  ]);
+
+  const result = await request.call(context, USER_GET_OPTIONS);
+
+  assert.deepEqual(result, { errcode: 0, result: { userid: 'user-1' } });
+  assert.equal(calls.length, 2);
+});
+
+test('refreshes the token for the get-user-by-mobile operation from issue 12', async () => {
+  const { calls, context } = createContext([
+    {
+      errcode: 40014,
+      errmsg: 'ding talk error[subcode=40014,submsg=不合法的access_token]',
+    },
+    { errcode: 0, result: { userid: 'user-by-mobile' } },
+  ]);
+
+  const result = await request.call(context, USER_GET_BY_MOBILE_OPTIONS);
+
+  assert.deepEqual(result, { errcode: 0, result: { userid: 'user-by-mobile' } });
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].options.url, USER_GET_BY_MOBILE_OPTIONS.url);
+  assert.deepEqual(calls[0].options.body, { mobile: '13800000000' });
+  assert.equal(calls[1].authentication.credentialsDecrypted.data.accessToken, '');
 });
 
 test('refreshes when an HTTP error exposes the token failure only in Error.message', async () => {

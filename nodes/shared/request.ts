@@ -26,12 +26,14 @@ function normalizeUrl(u?: string): string | undefined {
 
 function hasTokenErrorCode(body: unknown): boolean {
   if (typeof body === 'string') {
-    return /\b(?:errcode|subcode)\b["']?\s*[:=]\s*["']?40014\b/i.test(body);
+    return /\b(?:errcode|sub_?code)\b["']?\s*[:=]\s*["']?40014\b/i.test(body);
   }
   if (typeof body !== 'object' || body === null) return false;
 
   const response = body as Record<string, unknown>;
-  return [response.errcode, response.subcode].some((code) => String(code) === '40014');
+  return [response.errcode, response.subcode, response.sub_code].some(
+    (code) => String(code) === '40014',
+  );
 }
 
 function looksLikeTokenProblem(body: unknown): boolean {

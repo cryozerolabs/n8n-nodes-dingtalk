@@ -43,10 +43,23 @@ const formProperties: INodeProperties[] = [
   },
 ];
 
+const clientTokenProperty: INodeProperties = {
+  displayName: 'Client Token',
+  name: 'clientToken',
+  // clientToken 是用于幂等控制的 UUID，不是鉴权凭证。
+  // eslint-disable-next-line n8n-nodes-base/node-param-type-options-password-missing
+  type: 'string',
+  default: '',
+  placeholder: '550e8400-e29b-41d4-a716-446655440000',
+  description: '可选的 UUID v4 幂等键。相同值的重复请求不会重复新增记录；留空时视为新请求',
+  displayOptions: showOnly,
+};
+
 const properties: INodeProperties[] = [
   ...operatorProps(showOnly),
   ...baseProps(showOnly),
   ...sheetProps(showOnly),
+  clientTokenProperty,
   ...bodyProps(showOnly, {
     defaultMode: 'form',
     defaultJsonBody: JSON.stringify(
@@ -78,6 +91,7 @@ const op: OperationDef = {
     const baseId = getBase(this, itemIndex);
     const sheet = getSheet(this, itemIndex);
     const operatorId = await getOperatorId(this, itemIndex);
+    const clientToken = (this.getNodeParameter('clientToken', itemIndex, '') as string).trim();
 
     const body = getBodyData(this, itemIndex, {
       formBuilder: (ctx: IExecuteFunctions, idx: number) => {
@@ -115,10 +129,13 @@ const op: OperationDef = {
       },
     });
 
+    const qs: IDataObject = { operatorId };
+    if (clientToken) qs.clientToken = clientToken;
+
     const resp = await request.call(this, {
       method: 'POST',
       url: `/notable/bases/${baseId}/sheets/${sheet}/records`,
-      qs: { operatorId },
+      qs,
       body,
     });
 
