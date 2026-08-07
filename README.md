@@ -253,6 +253,12 @@
 
 ## 📋 版本历史
 
+### v0.9.2
+
+- 修复：旧版 DingTalk `oapi` 用户接口返回 `40014` 时，自动刷新缓存的 `access_token` 并重试一次，覆盖“查询用户详情”和“根据手机号查询用户”等操作（[#42](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues/42)、[#12](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues/12)）
+- 修复：补充 AI 表格“新增记录”缺失的 `clientToken` UUID v4 幂等参数；留空时不发送该参数（[#32](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues/32)）
+- 保持：非鉴权类钉钉 API 错误仍将原始错误信息返回给 n8n
+
 ### v0.9.1
 
 - 修复：待办创建参数与钉钉接口定义保持一致，仅保留主题为必填项，业务来源 ID、执行人、详情页地址和操作人改为可选

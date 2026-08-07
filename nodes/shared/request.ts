@@ -24,31 +24,67 @@ function normalizeUrl(u?: string): string | undefined {
   return u;
 }
 
+function hasTokenErrorCode(body: unknown): boolean {
+  if (typeof body === 'string') {
+    return /\b(?:errcode|sub_?code)\b["']?\s*[:=]\s*["']?40014\b/i.test(body);
+  }
+  if (typeof body !== 'object' || body === null) return false;
+
+  const response = body as Record<string, unknown>;
+  return [response.errcode, response.subcode, response.sub_code].some(
+    (code) => String(code) === '40014',
+  );
+}
+
 function looksLikeTokenProblem(body: unknown): boolean {
   if (body === undefined || body === null) return false;
+  if (hasTokenErrorCode(body)) return true;
 
   let serialized: string;
   if (typeof body === 'string') {
     serialized = body;
+  } else if (body instanceof Error) {
+    serialized = body.message;
   } else {
     try {
-      serialized = JSON.stringify(body);
+      const value = JSON.stringify(body);
+      if (!value) return false;
+      serialized = value;
     } catch {
       return false;
     }
   }
 
   const s = serialized.toLowerCase();
-  // 常见提示: access_token is blank / invalid / expired / 不合法 等
-  return (
-    (s.includes('access_token') &&
-      (s.includes('blank') ||
-        s.includes('invalid') ||
-        s.includes('expired') ||
-        s.includes('非法') ||
-        s.includes('不合法'))) ||
-    s.includes('应用尚未开通所需的权限')
-  );
+  const mentionsAccessToken = /access[\s_-]*token/.test(s);
+  const describesInvalidToken =
+    /\b(?:blank|invalid|expired)\b/.test(s) ||
+    s.includes('非法') ||
+    s.includes('不合法') ||
+    s.includes('过期') ||
+    s.includes('失效') ||
+    s.includes('超时');
+
+  // 兼容 accessToken、access_token、access token 等常见错误文本。
+  return (mentionsAccessToken && describesInvalidToken) || s.includes('应用尚未开通所需的权限');
+}
+
+function createResponseError(response: unknown): Error & { context: { data: unknown } } {
+  const data =
+    typeof response === 'object' && response !== null
+      ? (response as Record<string, unknown>)
+      : undefined;
+  const rawMessage = data?.errmsg ?? data?.message;
+  const rawCode = data?.errcode ?? data?.code;
+  const message =
+    typeof rawMessage === 'string' && rawMessage.length > 0
+      ? rawMessage
+      : rawCode !== undefined
+        ? `DingTalk API error (${String(rawCode)})`
+        : 'DingTalk API request failed';
+  const error = new Error(message) as Error & { context: { data: unknown } };
+  error.context = { data: response };
+  return error;
 }
 
 async function originRequest(
@@ -94,7 +130,7 @@ async function originRequest(
     headers: Object.keys(mergedOptions.headers),
     json: mergedOptions.json,
     body: mergedOptions.body,
-    accessToken: credentials.accessToken,
+    hasAccessToken: Boolean(credentials.accessToken),
     clearAccessToken,
   });
 
@@ -121,7 +157,7 @@ async function originRequest(
 
   // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
   if (resp.errcode) {
-    throw new Error(resp.errmsg);
+    throw createResponseError(resp);
   }
 
   return resp;
@@ -134,36 +170,43 @@ export async function request<T = unknown>(
 ): Promise<T> {
   const credentialType = extras.credentialType ?? 'dingtalkApi';
   const supportsTokenRefresh = extras.supportsTokenRefresh ?? credentialType === 'dingtalkApi';
+  const maxAttempts = supportsTokenRefresh ? 2 : 1;
 
-  try {
-    const data = await originRequest.call(this, options, credentialType, false);
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    let data: unknown;
+    try {
+      data = await originRequest.call(this, options, credentialType, attempt > 0);
+    } catch (err) {
+      const e = err as {
+        context?: { data?: unknown };
+        description?: unknown;
+        message?: unknown;
+      };
+
+      this.logger?.error?.('request (error)', {
+        context: e.context,
+        description: e.description,
+        message: e.message,
+      });
+
+      const maybeAuth = [e.context?.data, e.description, e.message, err].some(
+        looksLikeTokenProblem,
+      );
+
+      if (supportsTokenRefresh && attempt === 0 && maybeAuth) {
+        // 清空 token 触发 preAuthentication 重新获取，再试一次
+        continue;
+      }
+      // 非鉴权问题或刷新后仍失败时，统一包装为 n8n API 错误
+      throw new NodeApiError(this.getNode(), err as JsonObject);
+    }
+
     if (supportsTokenRefresh && looksLikeTokenProblem(data)) {
-      // 清空 token 触发 preAuthentication 重新获取，再试一次
-      const retry = await originRequest.call(this, options, credentialType, true);
-      return retry as T;
+      if (attempt === 0) continue;
+      throw new NodeApiError(this.getNode(), createResponseError(data) as unknown as JsonObject);
     }
     return data as T;
-  } catch (err) {
-    const e = err as {
-      context?: { data?: unknown };
-      description?: unknown;
-      message?: unknown;
-    };
-
-    this.logger?.error?.('request (error)', {
-      context: e.context,
-      description: e.description,
-      message: e.message,
-    });
-
-    const maybeAuth = looksLikeTokenProblem(e.context?.data ?? e.description ?? err);
-
-    if (supportsTokenRefresh && maybeAuth) {
-      // 清空 token 触发 preAuthentication 重新获取，再试一次
-      const retry = await originRequest.call(this, options, credentialType, true);
-      return retry as T;
-    }
-    // 非鉴权问题包装为 n8n API 错误，保留原始上下文供 UI 展示
-    throw new NodeApiError(this.getNode(), err as JsonObject);
   }
+
+  throw new Error('DingTalk request exhausted all retry attempts');
 }
