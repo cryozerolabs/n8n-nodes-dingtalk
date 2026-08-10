@@ -83,7 +83,8 @@ const op: OperationDef = {
       throw new NodeOperationError(this.getNode(), '未获取到上传地址', { itemIndex });
     }
 
-    await request.call(this, {
+    // uploadUrl 是钉钉返回的第三方签名地址，不能附带 Dingtalk API 凭据。
+    await this.helpers.httpRequest({
       method: 'PUT',
       url: uploadUrl,
       headers: {

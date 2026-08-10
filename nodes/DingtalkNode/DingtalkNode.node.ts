@@ -10,6 +10,7 @@ import {
 } from 'n8n-workflow';
 import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
+import apiBundle from './resources/api';
 import authBundle from './resources/auth';
 import docBundle from './resources/doc';
 import notableBundle from './resources/notable';
@@ -21,6 +22,7 @@ import workbooksBundle from './resources/workbooks';
 
 // 静态导入所有资源包
 const bundles: ResourceBundle[] = [
+  apiBundle,
   authBundle,
   docBundle,
   notableBundle,

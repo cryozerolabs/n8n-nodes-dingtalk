@@ -1,7 +1,7 @@
 {
   "node": "@cryozerolabs/n8n-nodes-dingtalk",
-  "nodeVersion": "0.9.2",
-  "codexVersion": "0.9.2",
+  "nodeVersion": "0.10.0",
+  "codexVersion": "0.10.0",
   "categories": ["Productivity", "Communication"],
   "resources": {
     "credentialDocumentation": [

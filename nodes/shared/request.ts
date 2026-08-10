@@ -31,9 +31,10 @@ function hasTokenErrorCode(body: unknown): boolean {
   if (typeof body !== 'object' || body === null) return false;
 
   const response = body as Record<string, unknown>;
-  return [response.errcode, response.subcode, response.sub_code].some(
-    (code) => String(code) === '40014',
+  const codes = [response.errcode, response.subcode, response.sub_code, response.code].map(
+    (code) => String(code).toLowerCase(),
   );
+  return codes.includes('40014') || codes.includes('invalidauthentication');
 }
 
 function looksLikeTokenProblem(body: unknown): boolean {
@@ -65,8 +66,11 @@ function looksLikeTokenProblem(body: unknown): boolean {
     s.includes('失效') ||
     s.includes('超时');
 
-  // 兼容 accessToken、access_token、access token 等常见错误文本。
-  return (mentionsAccessToken && describesInvalidToken) || s.includes('应用尚未开通所需的权限');
+  // 异常响应路径兼容常见 token 错误文本，以及应用刚新增权限后需要刷新 token 的提示。
+  return (
+    (mentionsAccessToken && describesInvalidToken) ||
+    serialized.includes('应用尚未开通所需的权限')
+  );
 }
 
 function createResponseError(response: unknown): Error & { context: { data: unknown } } {
@@ -74,11 +78,13 @@ function createResponseError(response: unknown): Error & { context: { data: unkn
     typeof response === 'object' && response !== null
       ? (response as Record<string, unknown>)
       : undefined;
-  const rawMessage = data?.errmsg ?? data?.message;
-  const rawCode = data?.errcode ?? data?.code;
+  const rawMessage = data?.sub_msg ?? data?.submsg ?? data?.errmsg ?? data?.message;
+  const rawCode = data?.sub_code ?? data?.subcode ?? data?.errcode ?? data?.code;
   const message =
     typeof rawMessage === 'string' && rawMessage.length > 0
-      ? rawMessage
+      ? rawCode !== undefined
+        ? `${rawMessage} (${String(rawCode)})`
+        : rawMessage
       : rawCode !== undefined
         ? `DingTalk API error (${String(rawCode)})`
         : 'DingTalk API request failed';
@@ -155,9 +161,17 @@ async function originRequest(
     response: resp,
   });
 
-  // 检查错误, 如果errcode存在则抛出错误，而不是当作成功返回
-  if (resp.errcode) {
-    throw createResponseError(resp);
+  // 检查错误, 如果errcode为非零值则抛出错误，而不是当作成功返回
+  if (typeof resp === 'object' && resp !== null && 'errcode' in resp) {
+    const errcode = (resp as Record<string, unknown>).errcode;
+    if (
+      errcode !== undefined &&
+      errcode !== null &&
+      errcode !== '' &&
+      String(errcode) !== '0'
+    ) {
+      throw createResponseError(resp);
+    }
   }
 
   return resp;
@@ -201,7 +215,8 @@ export async function request<T = unknown>(
       throw new NodeApiError(this.getNode(), err as JsonObject);
     }
 
-    if (supportsTokenRefresh && looksLikeTokenProblem(data)) {
+    // 成功响应只根据结构化错误码重试，避免业务文本恰好提及 token 时重放写请求。
+    if (supportsTokenRefresh && hasTokenErrorCode(data)) {
       if (attempt === 0) continue;
       throw new NodeApiError(this.getNode(), createResponseError(data) as unknown as JsonObject);
     }

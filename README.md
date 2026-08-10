@@ -27,6 +27,10 @@
 
 - **获取访问令牌** - 自动获取和刷新 access_token
 
+### 🌐 自定义 API 请求 (API)
+
+- **发送请求** - 调用尚未封装的钉钉 JSON API，支持新版、旧版 API 以及 Query、Headers 和 JSON Body，并自动刷新失效的 access_token
+
 ### 📊 AI 表格 (Notable)
 
 ![Notable](docs/images/notable-ai-table-guide.png)
@@ -181,11 +185,23 @@
 
 ### 扩展功能 - 调用其他钉钉 API
 
-本节点目前已实现钉钉开放平台的核心功能。对于尚未开发的 API 接口，你可以通过以下方式扩展使用：
+对于尚未封装的钉钉 JSON API，优先使用 DingTalk Node 的 **自定义 API 请求 → 发送请求** 操作：
+
+1. 选择请求方法。
+2. 在 **API URL** 中粘贴钉钉开放平台文档里的完整接口地址。
+3. 根据钉钉接口文档填写 Query Parameters、Headers 和 JSON Body。
+
+该操作只允许请求 `api.dingtalk.com` 和 `oapi.dingtalk.com`，并自动完成以下处理：
+
+- 新版 API 通过 `x-acs-dingtalk-access-token` 请求头发送 access_token。
+- 旧版 API 通过 `access_token` 查询参数发送 access_token。
+- 钉钉以 HTTP 200 返回 `errcode: 40014` 时，清除失效令牌、重新获取令牌并重试一次。
+
+当前通用操作面向 JSON API。文件上传、下载或 multipart 请求仍应使用已有的专用操作，或按接口要求使用 HTTP Request 节点。
 
 #### 使用 HTTP Request 节点
 
-使用 n8n 的 **HTTP Request** 节点来调用任何钉钉 API：
+也可以使用 n8n 的 **HTTP Request** 节点直接调用钉钉 API：
 
 **基本配置示例：**
 
@@ -196,7 +212,7 @@
 - **Send Query Parameters**: 根据具体 API 要求配置
 - **Send Body**: 根据具体 API 要求配置
 
-这种方式让你可以使用钉钉开放平台的任何 API，而不受本节点当前功能的限制。所有的身份验证和令牌管理都由本节点自动处理。
+预定义凭据会注入 access_token。旧版钉钉 API 可能以 HTTP 200 返回 `errcode: 40014`，此时 HTTP Request 节点会将响应视为成功，无法触发凭据刷新。需要自动恢复失效令牌时，请使用上面的 **自定义 API 请求 → 发送请求** 操作。
 
 ## 🎯 示例工作流
 
@@ -252,6 +268,13 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+### v0.10.0
+
+- 新增：提供“自定义 API 请求”操作，可调用尚未封装的钉钉 JSON API；支持 `GET`、`POST`、`PUT`、`PATCH`、`DELETE`、`HEAD`，以及 Query Parameters、Headers 和 JSON Body，并复用节点的 access token 自动刷新能力（[#6](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues/6)）
+- 加强：Dingtalk API 凭据仅向 `api.dingtalk.com` 和 `oapi.dingtalk.com` 的 HTTPS 地址注入 access token，并清理请求中手工填写的同名认证字段，避免凭据被覆盖或发送到非钉钉域名
+- 优化：扩展 `40014`、`InvalidAuthentication` 等失效凭据响应的识别，保留 `sub_code` 和 `sub_msg` 错误详情；成功响应只依据结构化错误码决定是否重试，避免因业务文本提及 token 而重复执行写请求
+- 修复：文档附件改为直接上传到钉钉返回的签名地址，不再向 OSS 上传地址附带 Dingtalk API 凭据
 
 ### v0.9.2
 

@@ -83,7 +83,7 @@ export function makeResourceBundle(args: {
     options: operations.map((o) => ({
       name: o.name,
       value: o.value,
-      action: `${name} ${o.action ?? o.name}`,
+      action: o.action ?? `${name} ${o.name}`,
       description: o.description,
     })),
     default: '', // 让用户显式选择

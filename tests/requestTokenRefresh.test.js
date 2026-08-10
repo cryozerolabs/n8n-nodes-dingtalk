@@ -126,10 +126,41 @@ test('refreshes when an HTTP error exposes the token failure only in Error.messa
   assert.equal(calls[1].authentication.credentialsDecrypted.data.accessToken, '');
 });
 
+test('refreshes once when an API error says the app permission is not enabled', async () => {
+  const permissionError = new Error('Forbidden');
+  permissionError.context = {
+    data: {
+      errcode: 403,
+      errmsg: '应用尚未开通所需的权限：[Contact.User.Read]',
+    },
+  };
+  const { calls, context } = createContext([
+    permissionError,
+    { errcode: 0, result: { userid: 'user-1' } },
+  ]);
+
+  const result = await request.call(context, USER_GET_OPTIONS);
+
+  assert.deepEqual(result, { errcode: 0, result: { userid: 'user-1' } });
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].authentication.credentialsDecrypted.data.accessToken, 'stale-token');
+  assert.equal(calls[1].authentication.credentialsDecrypted.data.accessToken, '');
+});
+
 test('does not refresh the access token for unrelated business errors', async () => {
   const { calls, context } = createContext([{ errcode: 40035, errmsg: '缺少参数 userid' }]);
 
   await assert.rejects(request.call(context, USER_GET_OPTIONS));
+  assert.equal(calls.length, 1);
+});
+
+test('accepts a string zero errcode as a successful response', async () => {
+  const response = { errcode: '0', result: { userid: 'user-1' } };
+  const { calls, context } = createContext([response]);
+
+  const result = await request.call(context, USER_GET_OPTIONS);
+
+  assert.deepEqual(result, response);
   assert.equal(calls.length, 1);
 });
 
@@ -143,14 +174,43 @@ test('does not treat unrelated response fields containing 40014 as token errors'
   assert.equal(calls.length, 1);
 });
 
+test('does not retry a successful response whose business text mentions an expired token', async () => {
+  const response = {
+    result: {
+      message: 'The imported audit record says access token expired',
+    },
+  };
+  const { calls, context } = createContext([response, { shouldNot: 'run' }]);
+
+  const result = await request.call(context, USER_GET_OPTIONS);
+
+  assert.deepEqual(result, response);
+  assert.equal(calls.length, 1);
+});
+
+test('does not retry a successful response whose business text quotes a permission error', async () => {
+  const response = {
+    result: {
+      message: '历史日志：应用尚未开通所需的权限',
+    },
+  };
+  const { calls, context } = createContext([response, { shouldNot: 'run' }]);
+
+  const result = await request.call(context, USER_GET_OPTIONS);
+
+  assert.deepEqual(result, response);
+  assert.equal(calls.length, 1);
+});
+
 test('retries an access token failure only once', async () => {
   const tokenError = {
-    errcode: 40014,
-    errmsg: 'ding talk error[subcode=40014,submsg=不合法的access_token]',
+    errcode: 88,
+    sub_code: '40014',
+    sub_msg: '不合法的access_token',
   };
   const { calls, context } = createContext([tokenError, tokenError]);
 
-  await assert.rejects(request.call(context, USER_GET_OPTIONS), /40014/);
+  await assert.rejects(request.call(context, USER_GET_OPTIONS), /不合法的access_token.*40014/);
   assert.equal(calls.length, 2);
 });
 
