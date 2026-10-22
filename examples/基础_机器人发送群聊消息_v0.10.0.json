@@ -5,9 +5,19 @@
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [-560, 208],
+      "position": [-760, 208],
       "id": "a1e2f3a4-1111-4a2b-9c3d-4e5f60718201",
       "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileName": "/path/to/report.xlsx"
+      },
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [-544, 432],
+      "id": "c9d0e1f2-9999-4fa3-b4c5-0d1e26375869",
+      "name": "读取本地文件"
     },
     {
       "parameters": {
@@ -31,7 +41,7 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [-304, 208],
+      "position": [-512, 208],
       "id": "d4e5f6a7-4444-4d5e-af60-7b8c93041524",
       "name": "config"
     },
@@ -45,7 +55,7 @@
       },
       "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
-      "position": [0, 96],
+      "position": [-208, 96],
       "id": "e5f6a7b8-5555-4e6f-b071-8c9d04152635",
       "name": "机器人 机器人发送群聊消息-文本"
     },
@@ -61,7 +71,7 @@
       },
       "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
-      "position": [224, 96],
+      "position": [16, 96],
       "id": "f6a7b8c9-6666-4f70-c182-9d0e15263746",
       "name": "机器人 机器人发送群聊消息-Markdown"
     },
@@ -80,20 +90,51 @@
       },
       "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
       "typeVersion": 1,
-      "position": [448, 96],
+      "position": [240, 96],
       "id": "a7b8c9d0-7777-4a81-d293-0e1f26374857",
       "name": "机器人 机器人发送群聊消息-ActionCard"
     },
     {
       "parameters": {
-        "content": "## 机器人发送群聊消息（企业内部机器人）\n**准备事项：**\n1. 凭证使用企业内部应用（corpId + AppKey + AppSecret），应用需开通「企业内机器人发送消息」权限\n2. 机器人需安装到目标群（robotCode 在开放平台 → 应用 → 机器人页面获取）\n3. openConversationId 可通过 Stream 推送事件、群会话开放接口等获取\n\n**说明：**\n- 返回 processQueryKey，可用于查询已读状态或撤回\n- coolAppCode 仅在机器人以酷应用方式安装到群时填写",
-        "height": 320,
+        "resource": "robot",
+        "operation": "robot.media.upload",
+        "mediaType": "file",
+        "inputDataFieldName": "data",
+        "fileName": "report.xlsx"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [-320, 432],
+      "id": "d0e1f2a3-1010-4eb4-c5d6-1e2f36475970",
+      "name": "机器人 上传媒体文件"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.group.send",
+        "msgtype": "file",
+        "mediaId": "={{ $('机器人 上传媒体文件').item.json.media_id }}",
+        "fileName": "report.xlsx",
+        "fileType": "xlsx",
+        "robotCode": "={{ $('config').item.json.robotCode }}",
+        "openConversationId": "={{ $('config').item.json.openConversationId }}"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [-96, 432],
+      "id": "e1f2a3b4-1212-4fc5-d6e7-2f3040586181",
+      "name": "机器人 机器人发送群聊消息-文件"
+    },
+    {
+      "parameters": {
+        "content": "## 机器人发送群聊消息（企业内部机器人）\n**准备事项：**\n1. 凭证使用企业内部应用（corpId + AppKey + AppSecret），应用需开通「企业内机器人发送消息」权限\n2. 机器人需安装到目标群（robotCode 在开放平台 → 应用 → 机器人页面获取）\n3. openConversationId 可通过 Stream 推送事件、群会话开放接口等获取\n\n**说明：**\n- 支持文本、链接、Markdown、图片、ActionCard（单按钮/竖排2-5按钮/横排双按钮）、语音、文件、视频及自定义消息类型\n- 发送图片/语音/文件/视频需先通过「上传媒体文件」获取 media_id\n- 返回 processQueryKey，可用于查询已读状态或撤回\n- coolAppCode 仅在机器人以酷应用方式安装到群时填写",
+        "height": 368,
         "width": 640,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-48, -128],
+      "position": [-48, -160],
       "id": "b8c9d0e1-8888-4b92-e3a4-1f2f37485968",
       "name": "Sticky Note"
     }
@@ -101,7 +142,12 @@
   "pinData": {},
   "connections": {
     "When clicking ‘Execute workflow’": {
-      "main": [[{ "node": "config", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          { "node": "config", "type": "main", "index": 0 },
+          { "node": "读取本地文件", "type": "main", "index": 0 }
+        ]
+      ]
     },
     "config": {
       "main": [[{ "node": "机器人 机器人发送群聊消息-文本", "type": "main", "index": 0 }]]
@@ -113,6 +159,15 @@
       "main": [[{ "node": "机器人 机器人发送群聊消息-ActionCard", "type": "main", "index": 0 }]]
     },
     "机器人 机器人发送群聊消息-ActionCard": {
+      "main": [[]]
+    },
+    "读取本地文件": {
+      "main": [[{ "node": "机器人 上传媒体文件", "type": "main", "index": 0 }]]
+    },
+    "机器人 上传媒体文件": {
+      "main": [[{ "node": "机器人 机器人发送群聊消息-文件", "type": "main", "index": 0 }]]
+    },
+    "机器人 机器人发送群聊消息-文件": {
       "main": [[]]
     }
   },

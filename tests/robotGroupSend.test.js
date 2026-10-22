@@ -113,6 +113,16 @@ test('buildMsgKeyAndParam builds sampleLink payloads', () => {
   });
 });
 
+test('buildMsgKeyAndParam builds sampleImageMsg payloads', () => {
+  const result = buildMsgKeyAndParam({
+    msgtype: 'image',
+    photoURL: '@lADOABQ5abc',
+  });
+
+  assert.equal(result.msgKey, 'sampleImageMsg');
+  assert.deepEqual(JSON.parse(result.msgParam), { photoURL: '@lADOABQ5abc' });
+});
+
 test('buildMsgKeyAndParam builds single-button sampleActionCard payloads', () => {
   const result = buildMsgKeyAndParam({
     msgtype: 'actionCard',
@@ -132,13 +142,12 @@ test('buildMsgKeyAndParam builds single-button sampleActionCard payloads', () =>
   });
 });
 
-test('buildMsgKeyAndParam builds multi-button sampleActionCard payloads', () => {
+test('buildMsgKeyAndParam builds vertical multi-button actionCard payloads (sampleActionCard2~5)', () => {
   const result = buildMsgKeyAndParam({
     msgtype: 'actionCard',
     title: '标题',
     text: '内容',
-    btns: 'btns',
-    btnOrientation: 1,
+    btns: 'vertical',
     buttons: {
       button: [
         { title: '按钮1', actionURL: 'https://example.com/1' },
@@ -147,44 +156,109 @@ test('buildMsgKeyAndParam builds multi-button sampleActionCard payloads', () => 
     },
   });
 
-  assert.equal(result.msgKey, 'sampleActionCard');
+  assert.equal(result.msgKey, 'sampleActionCard2');
   assert.deepEqual(JSON.parse(result.msgParam), {
     title: '标题',
     text: '内容',
-    btnOrientation: '1',
-    btns: [
-      { title: '按钮1', actionURL: 'https://example.com/1' },
-      { title: '按钮2', actionURL: 'https://example.com/2' },
-    ],
+    actionTitle1: '按钮1',
+    actionURL1: 'https://example.com/1',
+    actionTitle2: '按钮2',
+    actionURL2: 'https://example.com/2',
   });
 });
 
-test('buildMsgKeyAndParam builds sampleFeedCard payloads', () => {
+test('buildMsgKeyAndParam builds horizontal two-button actionCard payloads (sampleActionCard6)', () => {
   const result = buildMsgKeyAndParam({
-    msgtype: 'feedCard',
-    links: {
-      link: [
-        { title: '链接1', messageURL: 'https://example.com/1', picURL: 'https://e.com/1.png' },
-      ],
-    },
+    msgtype: 'actionCard',
+    title: '标题',
+    text: '内容',
+    btns: 'horizontal',
+    buttonTitle1: '同意',
+    buttonUrl1: 'https://example.com/yes',
+    buttonTitle2: '拒绝',
+    buttonUrl2: 'https://example.com/no',
   });
 
-  assert.equal(result.msgKey, 'sampleFeedCard');
+  assert.equal(result.msgKey, 'sampleActionCard6');
   assert.deepEqual(JSON.parse(result.msgParam), {
-    links: [
-      { title: '链接1', messageURL: 'https://example.com/1', picURL: 'https://e.com/1.png' },
-    ],
+    title: '标题',
+    text: '内容',
+    buttonTitle1: '同意',
+    buttonUrl1: 'https://example.com/yes',
+    buttonTitle2: '拒绝',
+    buttonUrl2: 'https://example.com/no',
+  });
+});
+
+test('buildMsgKeyAndParam builds sampleAudio payloads with millisecond duration', () => {
+  const result = buildMsgKeyAndParam({
+    msgtype: 'audio',
+    mediaId: '@IR_Pabc',
+    duration: 3000,
+  });
+
+  assert.equal(result.msgKey, 'sampleAudio');
+  assert.deepEqual(JSON.parse(result.msgParam), { mediaId: '@IR_Pabc', duration: '3000' });
+});
+
+test('buildMsgKeyAndParam builds sampleFile payloads', () => {
+  const result = buildMsgKeyAndParam({
+    msgtype: 'file',
+    mediaId: '@lAzPabc',
+    fileName: '表格.xlsx',
+    fileType: 'xlsx',
+  });
+
+  assert.equal(result.msgKey, 'sampleFile');
+  assert.deepEqual(JSON.parse(result.msgParam), {
+    mediaId: '@lAzPabc',
+    fileName: '表格.xlsx',
+    fileType: 'xlsx',
+  });
+});
+
+test('buildMsgKeyAndParam builds sampleVideo payloads and omits blank cover', () => {
+  const result = buildMsgKeyAndParam({
+    msgtype: 'video',
+    videoMediaId: '$iQELabc',
+    videoType: 'mp4',
+    duration: 15,
+    picMediaId: '',
+  });
+
+  assert.equal(result.msgKey, 'sampleVideo');
+  assert.deepEqual(JSON.parse(result.msgParam), {
+    duration: '15',
+    videoMediaId: '$iQELabc',
+    videoType: 'mp4',
+  });
+});
+
+test('buildMsgKeyAndParam builds sampleVideo payloads with cover picture', () => {
+  const result = buildMsgKeyAndParam({
+    msgtype: 'video',
+    videoMediaId: '$iQELabc',
+    videoType: 'mp4',
+    duration: 15,
+    picMediaId: '$igEabc',
+  });
+
+  assert.deepEqual(JSON.parse(result.msgParam), {
+    duration: '15',
+    videoMediaId: '$iQELabc',
+    videoType: 'mp4',
+    picMediaId: '$igEabc',
   });
 });
 
 test('buildMsgKeyAndParam supports custom msgKey with object param', () => {
   const result = buildMsgKeyAndParam({
     msgtype: 'custom',
-    customMsgKey: 'sampleImage',
+    customMsgKey: 'sampleImageMsg',
     customMsgParam: { photoURL: 'https://example.com/a.png' },
   });
 
-  assert.equal(result.msgKey, 'sampleImage');
+  assert.equal(result.msgKey, 'sampleImageMsg');
   assert.equal(result.msgParam, '{"photoURL":"https://example.com/a.png"}');
 });
 
@@ -225,6 +299,18 @@ test('collectMessageFormValues rejects non-object custom param', () => {
   );
 });
 
+test('collectMessageFormValues rejects vertical actionCard with wrong button count', () => {
+  assert.throws(
+    () =>
+      collectMessageFormValues(makeParamsContext({
+        msgtype: 'actionCard',
+        btns: 'vertical',
+        buttons: { button: [{ title: '仅一个', actionURL: 'https://example.com' }] },
+      }), 0),
+    /2到5个按钮/,
+  );
+});
+
 test('robot.group.send operation is registered with expected properties', () => {
   assert.equal(groupSend.value, 'robot.group.send');
   assert.equal(groupSend.name, '机器人发送群聊消息');
@@ -235,7 +321,17 @@ test('robot.group.send operation is registered with expected properties', () => 
 
   const msgtype = findFormProperty(groupSend, 'msgtype');
   const values = msgtype.options.map((option) => option.value);
-  assert.deepEqual(values, ['text', 'link', 'markdown', 'actionCard', 'feedCard', 'custom']);
+  assert.deepEqual(values, [
+    'text',
+    'link',
+    'markdown',
+    'image',
+    'actionCard',
+    'audio',
+    'file',
+    'video',
+    'custom',
+  ]);
 
   // JSON 模式默认请求体应包含群聊接口的关键字段
   const jsonBody = findFormProperty(groupSend, 'jsonBody').default;
@@ -310,6 +406,29 @@ test('robot.group.send sends markdown payload from form values', async () => {
   assert.deepEqual(JSON.parse(calls[0].options.body.msgParam), { title: '标题', text: '# 内容' });
 });
 
+test('robot.group.send sends file payload from form values', async () => {
+  const { calls, context } = createContext(
+    {
+      robotCode: 'robot-1',
+      openConversationId: 'cid-1',
+      msgtype: 'file',
+      mediaId: '{{ $json.media_id }}',
+      fileName: 'report.xlsx',
+      fileType: 'xlsx',
+    },
+    { processQueryKey: 'process-key-4' },
+  );
+
+  await groupSend.run.call(context, 0);
+
+  assert.equal(calls[0].options.body.msgKey, 'sampleFile');
+  assert.deepEqual(JSON.parse(calls[0].options.body.msgParam), {
+    mediaId: '{{ $json.media_id }}',
+    fileName: 'report.xlsx',
+    fileType: 'xlsx',
+  });
+});
+
 test('robot.oto.batchSend still posts to oToMessages/batchSend after refactor', async () => {
   const { calls, context } = createContext(
     {
@@ -317,7 +436,7 @@ test('robot.oto.batchSend still posts to oToMessages/batchSend after refactor', 
       userIds: 'user001,user002',
       content: '单聊内容',
     },
-    { processQueryKey: 'process-key-4' },
+    { processQueryKey: 'process-key-5' },
   );
 
   const result = await batchSend.run.call(context, 0);
@@ -332,5 +451,5 @@ test('robot.oto.batchSend still posts to oToMessages/batchSend after refactor', 
     msgParam: '{"content":"单聊内容"}',
   });
 
-  assert.deepEqual(result.json, { processQueryKey: 'process-key-4' });
+  assert.deepEqual(result.json, { processQueryKey: 'process-key-5' });
 });
