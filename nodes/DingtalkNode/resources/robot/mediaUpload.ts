@@ -58,6 +58,33 @@ const properties: INodeProperties[] = [
   },
 ];
 
+/**
+ * 手工构造 multipart/form-data 报文。
+ * 不使用 n8n 的 formData 选项：不同 n8n 版本的请求链路对 formData 支持不一致，
+ * 而纯 Buffer 拼装的报文在任何版本都能原样发送。
+ */
+export function buildMultipartBody(options: {
+  boundary: string;
+  mediaType: string;
+  fileName: string;
+  mimeType: string;
+  file: Buffer;
+}): Buffer {
+  const { boundary, mediaType, fileName, mimeType, file } = options;
+  // 文件名写入 Content-Disposition 头，需去掉引号/反斜杠/换行，避免破坏报文结构
+  const safeFileName = fileName.replace(/["\\\r\n]/g, '_');
+  return Buffer.concat([
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="type"\r\n\r\n${mediaType}\r\n`,
+    ),
+    Buffer.from(
+      `--${boundary}\r\nContent-Disposition: form-data; name="media"; filename="${safeFileName}"\r\nContent-Type: ${mimeType}\r\n\r\n`,
+    ),
+    file,
+    Buffer.from(`\r\n--${boundary}--\r\n`),
+  ]);
+}
+
 const op: OperationDef = {
   value: OP,
   name: '上传媒体文件',
@@ -74,22 +101,21 @@ const op: OperationDef = {
     const buffer = await this.helpers.getBinaryDataBuffer(itemIndex, inputDataFieldName);
 
     const fileName = fileNameOverride || binaryData.fileName || 'file';
+    const mimeType = binaryData.mimeType ?? 'application/octet-stream';
+    const boundary = `----n8nDingtalkMedia${Date.now().toString(16)}${Math.random()
+      .toString(16)
+      .slice(2, 10)}`;
+
+    const body = buildMultipartBody({ boundary, mediaType, fileName, mimeType, file: buffer });
 
     const resp = await request.call(this, {
       method: 'POST',
       url: 'https://oapi.dingtalk.com/media/upload',
-      // multipart 请求不能走 JSON 序列化
-      json: false,
-      formData: {
-        type: mediaType,
-        media: {
-          value: buffer,
-          options: {
-            filename: fileName,
-            contentType: binaryData.mimeType ?? 'application/octet-stream',
-          },
-        },
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
+      body,
+      json: false,
     });
 
     // json:false 时响应可能以字符串返回，这里统一解析并校验 errcode

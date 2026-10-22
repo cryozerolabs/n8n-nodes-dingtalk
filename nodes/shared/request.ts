@@ -3,7 +3,6 @@ import type {
   IExecuteFunctions,
   ILoadOptionsFunctions,
   IHttpRequestOptions,
-  IDataObject,
   JsonObject,
 } from 'n8n-workflow';
 
@@ -11,15 +10,6 @@ type Ctx = IExecuteFunctions | ILoadOptionsFunctions;
 type RequestExtras = {
   credentialType?: string;
   supportsTokenRefresh?: boolean;
-};
-
-/**
- * IHttpRequestOptions 的本地扩展：n8n-workflow 的类型定义尚未在 IHttpRequestOptions 上暴露
- * formData（旧版 IRequestOptions 已有），但运行时（@n8n/backend-network）支持对象形式的
- * multipart formData，文件字段用 { value, options: { filename, contentType } } 包装。
- */
-export type RequestOptionsWithForm = IHttpRequestOptions & {
-  formData?: IDataObject;
 };
 
 const DEFAULT_BASE_URL = 'https://api.dingtalk.com/v1.0';
@@ -105,7 +95,7 @@ function createResponseError(response: unknown): Error & { context: { data: unkn
 
 async function originRequest(
   this: Ctx,
-  options: RequestOptionsWithForm,
+  options: IHttpRequestOptions,
   credentialType: string,
   clearAccessToken = false,
 ) {
@@ -119,11 +109,11 @@ async function originRequest(
   // 相对地址自动补 baseURL
   const baseURL = options.baseURL ?? (isAbsoluteUrl(url) ? undefined : DEFAULT_BASE_URL);
 
-  // 设置默认值（multipart/form-data 请求由 httpRequest 根据 formData 自动生成带 boundary 的 Content-Type，不能覆盖）
-  const defaultHeaders: Record<string, string> = { Accept: 'application/json' };
-  if (!options.formData) {
-    defaultHeaders['Content-Type'] = 'application/json';
-  }
+  // 设置默认值（调用方自带 Content-Type（如手工构造的 multipart）时由展开顺序覆盖默认值）
+  const defaultHeaders = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
 
   const mergedOptions = {
     ...options,
@@ -189,7 +179,7 @@ async function originRequest(
 
 export async function request<T = unknown>(
   this: Ctx,
-  options: RequestOptionsWithForm,
+  options: IHttpRequestOptions,
   extras: RequestExtras = {},
 ): Promise<T> {
   const credentialType = extras.credentialType ?? 'dingtalkApi';

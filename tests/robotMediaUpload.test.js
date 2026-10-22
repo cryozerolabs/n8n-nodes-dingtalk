@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const mediaUpload = require('../dist/nodes/DingtalkNode/resources/robot/mediaUpload').default;
+const {
+  buildMultipartBody,
+} = require('../dist/nodes/DingtalkNode/resources/robot/mediaUpload');
 
 function createContext(params, response) {
   const calls = [];
@@ -9,6 +12,7 @@ function createContext(params, response) {
 
   return {
     calls,
+    buffer,
     context: {
       getNodeParameter(name, _itemIndex, fallback) {
         if (name in params) return params[name];
@@ -54,6 +58,43 @@ function createContext(params, response) {
   };
 }
 
+test('buildMultipartBody assembles type and media parts with boundary', () => {
+  const file = Buffer.from('hello file');
+  const body = buildMultipartBody({
+    boundary: '----boundary123',
+    mediaType: 'video',
+    fileName: 'video.mp4',
+    mimeType: 'video/mp4',
+    file,
+  });
+
+  const text = body.toString('utf8');
+  assert.ok(text.startsWith('------boundary123\r\n'));
+  assert.ok(text.includes('Content-Disposition: form-data; name="type"\r\n\r\nvideo\r\n'));
+  assert.ok(
+    text.includes(
+      'Content-Disposition: form-data; name="media"; filename="video.mp4"\r\nContent-Type: video/mp4\r\n\r\n',
+    ),
+  );
+  assert.ok(text.endsWith('\r\n------boundary123--\r\n'));
+  // 文件字节必须原样保留在报文中
+  assert.ok(body.includes(file));
+});
+
+test('buildMultipartBody sanitizes unsafe characters in file name', () => {
+  const body = buildMultipartBody({
+    boundary: '----b',
+    mediaType: 'file',
+    fileName: 'my"file\\odd\r\nname.xlsx',
+    mimeType: 'application/octet-stream',
+    file: Buffer.from('x'),
+  });
+
+  const text = body.toString('utf8');
+  assert.ok(!text.includes('odd\r\nname'));
+  assert.ok(text.includes('filename="my_file_odd__name.xlsx"'));
+});
+
 test('robot.media.upload operation is registered with expected properties', () => {
   assert.equal(mediaUpload.value, 'robot.media.upload');
   assert.equal(mediaUpload.name, '上传媒体文件');
@@ -73,8 +114,8 @@ test('robot.media.upload operation is registered with expected properties', () =
   assert.equal(fileName.required, undefined);
 });
 
-test('robot.media.upload posts multipart form to oapi media/upload', async () => {
-  const { calls, context } = createContext(
+test('robot.media.upload posts handcrafted multipart to oapi media/upload', async () => {
+  const { calls, buffer, context } = createContext(
     { mediaType: 'file' },
     { errcode: 0, errmsg: 'ok', type: 'file', media_id: '@lAzPabc', created_at: 1780000000000 },
   );
@@ -86,17 +127,23 @@ test('robot.media.upload posts multipart form to oapi media/upload', async () =>
   assert.equal(calls[0].options.method, 'POST');
   assert.equal(calls[0].options.url, 'https://oapi.dingtalk.com/media/upload');
   assert.equal(calls[0].options.json, false);
-  // multipart 请求不应手动注入 JSON Content-Type
-  assert.ok(!calls[0].options.headers || !calls[0].options.headers['Content-Type']);
 
-  const form = calls[0].options.formData;
-  assert.equal(form.type, 'file');
-  assert.equal(form.media.value.equals(Buffer.from('fake-file-content')), true);
-  assert.equal(form.media.options.filename, '报表.xlsx');
-  assert.equal(
-    form.media.options.contentType,
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  const contentType = calls[0].options.headers['Content-Type'];
+  assert.match(contentType, /^multipart\/form-data; boundary=----n8nDingtalkMedia/);
+  const boundary = contentType.split('boundary=')[1];
+
+  const body = calls[0].options.body;
+  assert.ok(Buffer.isBuffer(body));
+  assert.ok(body.includes(buffer));
+  const text = body.toString('utf8');
+  assert.ok(text.includes('name="type"\r\n\r\nfile\r\n'));
+  assert.ok(text.includes('filename="报表.xlsx"'));
+  assert.ok(
+    text.includes(
+      'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ),
   );
+  assert.ok(text.includes(`--${boundary}--`));
 
   assert.deepEqual(result.json, {
     errcode: 0,
@@ -108,7 +155,7 @@ test('robot.media.upload posts multipart form to oapi media/upload', async () =>
   assert.deepEqual(result.pairedItem, { item: 0 });
 });
 
-test('robot.media.upload prefers the fileName override for the multipart filename', async () => {
+test('robot.media.upload prefers the fileName override', async () => {
   const { calls, context } = createContext(
     { mediaType: 'file', fileName: 'report.xlsx' },
     { errcode: 0, errmsg: 'ok', type: 'file', media_id: '@lAzPabc', created_at: 1 },
@@ -116,19 +163,19 @@ test('robot.media.upload prefers the fileName override for the multipart filenam
 
   await mediaUpload.run.call(context, 0);
 
-  const mediaPart = calls[0].options.formData.media;
-  assert.equal(mediaPart.options.filename, 'report.xlsx');
+  const text = calls[0].options.body.toString('utf8');
+  assert.ok(text.includes('filename="report.xlsx"'));
 });
 
 test('robot.media.upload parses string responses and rejects non-zero errcode', async () => {
   const { calls, context } = createContext(
     { mediaType: 'image' },
-    JSON.stringify({ errcode: 40035, errmsg: '缺少参数 media' }),
+    JSON.stringify({ errcode: 43008, errmsg: '参数需要multipart类型' }),
   );
 
   await assert.rejects(
     () => mediaUpload.run.call(context, 0),
-    /缺少参数 media/,
+    /参数需要multipart类型/,
   );
   assert.equal(calls.length, 1);
 });
