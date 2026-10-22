@@ -1,0 +1,123 @@
+{
+  "name": "基础_机器人发送群聊消息_v0.10.0",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-560, 208],
+      "id": "a1e2f3a4-1111-4a2b-9c3d-4e5f60718201",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b2f3e4c5-2222-4b3c-8d4e-5f6a71829302",
+              "name": "robotCode",
+              "value": "ding1234567890",
+              "type": "string"
+            },
+            {
+              "id": "c3d4e5f6-3333-4c4d-9e5f-6a7b82930413",
+              "name": "openConversationId",
+              "value": "cidXXXXXXXXXXXXXXXX==",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-304, 208],
+      "id": "d4e5f6a7-4444-4d5e-af60-7b8c93041524",
+      "name": "config"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.group.send",
+        "robotCode": "={{ $('config').item.json.robotCode }}",
+        "openConversationId": "={{ $('config').item.json.openConversationId }}",
+        "content": "Hi, 这是 @cryozerolabs/n8n-nodes-dingtalk 的群聊文本消息"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [0, 96],
+      "id": "e5f6a7b8-5555-4e6f-b071-8c9d04152635",
+      "name": "机器人 机器人发送群聊消息-文本"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.group.send",
+        "msgtype": "markdown",
+        "title": "群聊Markdown消息",
+        "text": "=# 群聊 Markdown 消息\n> 支持 **加粗**、[链接](https://www.dingtalk.com) 等格式",
+        "robotCode": "={{ $('config').item.json.robotCode }}",
+        "openConversationId": "={{ $('config').item.json.openConversationId }}"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [224, 96],
+      "id": "f6a7b8c9-6666-4f70-c182-9d0e15263746",
+      "name": "机器人 机器人发送群聊消息-Markdown"
+    },
+    {
+      "parameters": {
+        "resource": "robot",
+        "operation": "robot.group.send",
+        "msgtype": "actionCard",
+        "title": "群聊ActionCard消息",
+        "text": "=# 群聊 ActionCard 消息\n> 点击下方按钮跳转",
+        "btns": "single",
+        "singleTitle": "打开钉钉官网",
+        "singleURL": "https://www.dingtalk.com",
+        "robotCode": "={{ $('config').item.json.robotCode }}",
+        "openConversationId": "={{ $('config').item.json.openConversationId }}"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [448, 96],
+      "id": "a7b8c9d0-7777-4a81-d293-0e1f26374857",
+      "name": "机器人 机器人发送群聊消息-ActionCard"
+    },
+    {
+      "parameters": {
+        "content": "## 机器人发送群聊消息（企业内部机器人）\n**准备事项：**\n1. 凭证使用企业内部应用（corpId + AppKey + AppSecret），应用需开通「企业内机器人发送消息」权限\n2. 机器人需安装到目标群（robotCode 在开放平台 → 应用 → 机器人页面获取）\n3. openConversationId 可通过 Stream 推送事件、群会话开放接口等获取\n\n**说明：**\n- 返回 processQueryKey，可用于查询已读状态或撤回\n- coolAppCode 仅在机器人以酷应用方式安装到群时填写",
+        "height": 320,
+        "width": 640,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-48, -128],
+      "id": "b8c9d0e1-8888-4b92-e3a4-1f2f37485968",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [[{ "node": "config", "type": "main", "index": 0 }]]
+    },
+    "config": {
+      "main": [[{ "node": "机器人 机器人发送群聊消息-文本", "type": "main", "index": 0 }]]
+    },
+    "机器人 机器人发送群聊消息-文本": {
+      "main": [[{ "node": "机器人 机器人发送群聊消息-Markdown", "type": "main", "index": 0 }]]
+    },
+    "机器人 机器人发送群聊消息-Markdown": {
+      "main": [[{ "node": "机器人 机器人发送群聊消息-ActionCard", "type": "main", "index": 0 }]]
+    },
+    "机器人 机器人发送群聊消息-ActionCard": {
+      "main": [[]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
