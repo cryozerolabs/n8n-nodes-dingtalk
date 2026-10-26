@@ -127,7 +127,7 @@
     },
     {
       "parameters": {
-        "content": "## 机器人发送群聊消息（企业内部机器人）\n**准备事项：**\n1. 凭证使用企业内部应用（corpId + AppKey + AppSecret），应用需开通「企业内机器人发送消息」权限\n2. 机器人需安装到目标群（robotCode 在开放平台 → 应用 → 机器人页面获取）\n3. openConversationId 可通过 Stream 推送事件、群会话开放接口等获取\n\n**说明：**\n- 支持文本、链接、Markdown、图片、ActionCard（单按钮/竖排2-5按钮/横排双按钮）、语音、文件、视频及自定义消息类型\n- 发送图片/语音/文件/视频需先通过「上传媒体文件」获取 media_id\n- 返回 processQueryKey，可用于查询已读状态或撤回\n- coolAppCode 仅在机器人以酷应用方式安装到群时填写",
+        "content": "## 机器人发送群聊消息（企业内部机器人）\n**准备事项：**\n1. 凭证使用企业内部应用（corpId + AppKey + AppSecret），应用需开通「企业内机器人发送消息」权限\n2. 机器人需安装到目标群（robotCode 在开放平台 → 应用 → 机器人页面获取）\n3. openConversationId 可通过 Stream 推送事件、群会话开放接口等获取\n\n**说明：**\n- 支持文本、链接、Markdown、图片、ActionCard（整体跳转/独立跳转）、语音、文件、视频及自定义消息类型\n- 独立跳转按钮统一在「按钮列表」维护，竖排（2-5个）或横排（2个）自动转换为对应官方消息模板\n- 发送图片/语音/文件/视频需先通过「上传媒体文件」获取 media_id\n- 返回 processQueryKey，可用于查询已读状态或撤回\n- coolAppCode 仅在机器人以酷应用方式安装到群时填写",
         "height": 368,
         "width": 640,
         "color": 4
@@ -142,15 +142,15 @@
   "pinData": {},
   "connections": {
     "When clicking ‘Execute workflow’": {
+      "main": [[{ "node": "config", "type": "main", "index": 0 }]]
+    },
+    "config": {
       "main": [
         [
-          { "node": "config", "type": "main", "index": 0 },
+          { "node": "机器人 机器人发送群聊消息-文本", "type": "main", "index": 0 },
           { "node": "读取本地文件", "type": "main", "index": 0 }
         ]
       ]
-    },
-    "config": {
-      "main": [[{ "node": "机器人 机器人发送群聊消息-文本", "type": "main", "index": 0 }]]
     },
     "机器人 机器人发送群聊消息-文本": {
       "main": [[{ "node": "机器人 机器人发送群聊消息-Markdown", "type": "main", "index": 0 }]]

@@ -195,8 +195,7 @@ export function robotMessageFormProperties(
       required: true,
       options: [
         { name: '整体跳转（单个按钮）', value: 'single' },
-        { name: '竖排多按钮（2-5个）', value: 'vertical' },
-        { name: '横排双按钮', value: 'horizontal' },
+        { name: '独立跳转（多按钮）', value: 'btns' },
       ],
       displayOptions: showFor(operationFilter, { msgtype: ['actionCard'] }),
     },
@@ -217,6 +216,17 @@ export function robotMessageFormProperties(
       displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['single'] }),
     },
     {
+      displayName: '按钮排列方式',
+      name: 'btnOrientation',
+      type: 'options',
+      default: 1,
+      options: [
+        { name: '按钮竖直排列', value: 0 },
+        { name: '按钮横向排列', value: 1 },
+      ],
+      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['btns'] }),
+    },
+    {
       displayName: '按钮列表',
       name: 'buttons',
       type: 'fixedCollection',
@@ -227,8 +237,9 @@ export function robotMessageFormProperties(
         multipleValues: true,
         sortable: true,
       },
-      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['vertical'] }),
-      description: '竖排按钮，数量需在2到5个之间（对应msgKey sampleActionCard2~sampleActionCard5）',
+      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['btns'] }),
+      description:
+        '独立跳转按钮统一在此维护：竖排列出发送时转换为 sampleActionCard2~5（2-5个按钮），横排时取前2个转换为 sampleActionCard6',
       options: [
         {
           displayName: '按钮',
@@ -253,38 +264,6 @@ export function robotMessageFormProperties(
           ],
         },
       ],
-    },
-    {
-      displayName: '按钮1标题',
-      name: 'buttonTitle1',
-      type: 'string',
-      default: '',
-      required: true,
-      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['horizontal'] }),
-    },
-    {
-      displayName: '按钮1跳转链接',
-      name: 'buttonUrl1',
-      type: 'string',
-      default: '',
-      required: true,
-      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['horizontal'] }),
-    },
-    {
-      displayName: '按钮2标题',
-      name: 'buttonTitle2',
-      type: 'string',
-      default: '',
-      required: true,
-      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['horizontal'] }),
-    },
-    {
-      displayName: '按钮2跳转链接',
-      name: 'buttonUrl2',
-      type: 'string',
-      default: '',
-      required: true,
-      displayOptions: showFor(operationFilter, { msgtype: ['actionCard'], btns: ['horizontal'] }),
     },
 
     // audio
@@ -393,11 +372,8 @@ export interface RobotMessageFormValues {
   btns?: string;
   singleTitle?: string;
   singleURL?: string;
+  btnOrientation?: number | string;
   buttons?: IDataObject;
-  buttonTitle1?: string;
-  buttonUrl1?: string;
-  buttonTitle2?: string;
-  buttonUrl2?: string;
   mediaId?: string;
   duration?: number | string;
   fileName?: string;
@@ -463,27 +439,30 @@ export function buildMsgKeyAndParam(values: RobotMessageFormValues): {
   } else if (msgtype === 'actionCard') {
     msgParam = { title: values.title ?? '', text: values.text ?? '' };
 
-    if (values.btns !== 'vertical' && values.btns !== 'horizontal') {
+    if (values.btns !== 'btns') {
       // 整体跳转：单按钮
       msgKey = 'sampleActionCard';
       msgParam.singleTitle = values.singleTitle ?? '';
       msgParam.singleURL = values.singleURL ?? '';
-    } else if (values.btns === 'vertical') {
-      // 竖排多按钮：按钮数量决定 msgKey（sampleActionCard2 ~ sampleActionCard5）
-      const buttons = (values.buttons?.button as IDataObject[] | undefined) ?? [];
-      msgKey = `sampleActionCard${Math.max(2, Math.min(buttons.length, 5))}`;
-      buttons.forEach((button, index) => {
-        const no = index + 1;
-        msgParam[`actionTitle${no}`] = (button.title as string) ?? '';
-        msgParam[`actionURL${no}`] = (button.actionURL as string) ?? '';
-      });
     } else {
-      // 横排双按钮
-      msgKey = 'sampleActionCard6';
-      msgParam.buttonTitle1 = values.buttonTitle1 ?? '';
-      msgParam.buttonUrl1 = values.buttonUrl1 ?? '';
-      msgParam.buttonTitle2 = values.buttonTitle2 ?? '';
-      msgParam.buttonUrl2 = values.buttonUrl2 ?? '';
+      // 独立跳转：统一的按钮列表输入，按排列方向内部转换为官方消息模板
+      const buttons = (values.buttons?.button as IDataObject[] | undefined) ?? [];
+      if (String(values.btnOrientation ?? 1) === '0') {
+        // 竖排：按钮数量决定模板 sampleActionCard2 ~ sampleActionCard5
+        msgKey = `sampleActionCard${Math.max(2, Math.min(buttons.length, 5))}`;
+        buttons.forEach((button, index) => {
+          const no = index + 1;
+          msgParam[`actionTitle${no}`] = (button.title as string) ?? '';
+          msgParam[`actionURL${no}`] = (button.actionURL as string) ?? '';
+        });
+      } else {
+        // 横排：固定两个按钮，取列表前两项转换为 sampleActionCard6
+        msgKey = 'sampleActionCard6';
+        msgParam.buttonTitle1 = (buttons[0]?.title as string) ?? '';
+        msgParam.buttonUrl1 = (buttons[0]?.actionURL as string) ?? '';
+        msgParam.buttonTitle2 = (buttons[1]?.title as string) ?? '';
+        msgParam.buttonUrl2 = (buttons[1]?.actionURL as string) ?? '';
+      }
     }
   } else if (msgtype === 'audio') {
     msgKey = 'sampleAudio';
@@ -522,10 +501,14 @@ export function collectMessageFormValues(
   const btns = ctx.getNodeParameter('btns', itemIndex, 'single') as string;
   const buttons = ctx.getNodeParameter('buttons', itemIndex, {}) as IDataObject;
 
-  if (msgtype === 'actionCard' && btns === 'vertical') {
+  if (msgtype === 'actionCard' && btns === 'btns') {
     const buttonList = (buttons.button as IDataObject[] | undefined) ?? [];
-    if (buttonList.length < 2 || buttonList.length > 5) {
+    const vertical = String(ctx.getNodeParameter('btnOrientation', itemIndex, 1)) === '0';
+    if (vertical && (buttonList.length < 2 || buttonList.length > 5)) {
       throw new NodeOperationError(ctx.getNode(), '竖排多按钮需要2到5个按钮', { itemIndex });
+    }
+    if (!vertical && buttonList.length !== 2) {
+      throw new NodeOperationError(ctx.getNode(), '横排双按钮需要2个按钮', { itemIndex });
     }
   }
 
@@ -540,11 +523,8 @@ export function collectMessageFormValues(
     btns,
     singleTitle: ctx.getNodeParameter('singleTitle', itemIndex, '') as string,
     singleURL: ctx.getNodeParameter('singleURL', itemIndex, '') as string,
+    btnOrientation: ctx.getNodeParameter('btnOrientation', itemIndex, 1) as number,
     buttons,
-    buttonTitle1: ctx.getNodeParameter('buttonTitle1', itemIndex, '') as string,
-    buttonUrl1: ctx.getNodeParameter('buttonUrl1', itemIndex, '') as string,
-    buttonTitle2: ctx.getNodeParameter('buttonTitle2', itemIndex, '') as string,
-    buttonUrl2: ctx.getNodeParameter('buttonUrl2', itemIndex, '') as string,
     mediaId: ctx.getNodeParameter('mediaId', itemIndex, '') as string,
     duration: ctx.getNodeParameter('duration', itemIndex, 0) as number,
     fileName: ctx.getNodeParameter('fileName', itemIndex, '') as string,

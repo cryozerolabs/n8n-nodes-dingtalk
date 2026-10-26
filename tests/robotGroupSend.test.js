@@ -147,7 +147,8 @@ test('buildMsgKeyAndParam builds vertical multi-button actionCard payloads (samp
     msgtype: 'actionCard',
     title: '标题',
     text: '内容',
-    btns: 'vertical',
+    btns: 'btns',
+    btnOrientation: 0,
     buttons: {
       button: [
         { title: '按钮1', actionURL: 'https://example.com/1' },
@@ -167,16 +168,19 @@ test('buildMsgKeyAndParam builds vertical multi-button actionCard payloads (samp
   });
 });
 
-test('buildMsgKeyAndParam builds horizontal two-button actionCard payloads (sampleActionCard6)', () => {
+test('buildMsgKeyAndParam converts a horizontal 2-button list to sampleActionCard6', () => {
   const result = buildMsgKeyAndParam({
     msgtype: 'actionCard',
     title: '标题',
     text: '内容',
-    btns: 'horizontal',
-    buttonTitle1: '同意',
-    buttonUrl1: 'https://example.com/yes',
-    buttonTitle2: '拒绝',
-    buttonUrl2: 'https://example.com/no',
+    btns: 'btns',
+    btnOrientation: 1,
+    buttons: {
+      button: [
+        { title: '同意', actionURL: 'https://example.com/yes' },
+        { title: '拒绝', actionURL: 'https://example.com/no' },
+      ],
+    },
   });
 
   assert.equal(result.msgKey, 'sampleActionCard6');
@@ -304,11 +308,57 @@ test('collectMessageFormValues rejects vertical actionCard with wrong button cou
     () =>
       collectMessageFormValues(makeParamsContext({
         msgtype: 'actionCard',
-        btns: 'vertical',
+        btns: 'btns',
+        btnOrientation: 0,
         buttons: { button: [{ title: '仅一个', actionURL: 'https://example.com' }] },
       }), 0),
     /2到5个按钮/,
   );
+});
+
+test('collectMessageFormValues rejects horizontal actionCard without exactly 2 buttons', () => {
+  assert.throws(
+    () =>
+      collectMessageFormValues(makeParamsContext({
+        msgtype: 'actionCard',
+        btns: 'btns',
+        btnOrientation: 1,
+        buttons: {
+          button: [
+            { title: 'a', actionURL: 'https://example.com/1' },
+            { title: 'b', actionURL: 'https://example.com/2' },
+            { title: 'c', actionURL: 'https://example.com/3' },
+          ],
+        },
+      }), 0),
+    /横排双按钮需要2个按钮/,
+  );
+});
+
+test('collectMessageFormValues passes the unified button list through to sampleActionCard6', () => {
+  const values = collectMessageFormValues(makeParamsContext({
+    msgtype: 'actionCard',
+    btns: 'btns',
+    btnOrientation: 1,
+    buttons: {
+      button: [
+        { title: '同意', actionURL: 'https://example.com/yes' },
+        { title: '拒绝', actionURL: 'https://example.com/no' },
+      ],
+    },
+  }), 0);
+
+  const result = buildMsgKeyAndParam(values);
+
+  assert.equal(result.msgKey, 'sampleActionCard6');
+  assert.deepEqual(JSON.parse(result.msgParam), {
+    title: '',
+    text: '',
+    buttonTitle1: '同意',
+    buttonUrl1: 'https://example.com/yes',
+    buttonTitle2: '拒绝',
+    buttonUrl2: 'https://example.com/no',
+  });
 });
 
 test('robot.group.send operation is registered with expected properties', () => {
