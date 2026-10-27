@@ -109,7 +109,7 @@ async function originRequest(
   // 相对地址自动补 baseURL
   const baseURL = options.baseURL ?? (isAbsoluteUrl(url) ? undefined : DEFAULT_BASE_URL);
 
-  // 设置默认值
+  // 设置默认值（调用方自带 Content-Type（如手工构造的 multipart）时由展开顺序覆盖默认值）
   const defaultHeaders = {
     'Content-Type': 'application/json',
     Accept: 'application/json',

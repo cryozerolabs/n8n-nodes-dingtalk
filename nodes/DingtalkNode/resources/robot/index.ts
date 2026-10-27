@@ -3,10 +3,20 @@ import batchSend from './batchSend';
 import downloadFileContent from './downloadFileContent';
 import dingRecall from './dingRecall';
 import dingSend from './dingSend';
+import groupSend from './groupSend';
+import mediaUpload from './mediaUpload';
 import send from './send';
 
 export default makeResourceBundle({
   value: 'robot',
   name: '机器人',
-  operations: [batchSend, dingRecall, dingSend, downloadFileContent, send],
+  operations: [
+    batchSend,
+    dingRecall,
+    dingSend,
+    downloadFileContent,
+    groupSend,
+    mediaUpload,
+    send,
+  ],
 });
