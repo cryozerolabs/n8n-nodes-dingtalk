@@ -1,7 +1,9 @@
 # 钉钉 n8n 节点 (DingTalk n8n Node)
 
-[![npm version](https://badge.fury.io/js/@cryozerolabs%2Fn8n-nodes-dingtalk.svg)](https://badge.fury.io/js/@cryozerolabs%2Fn8n-nodes-dingtalk)
+[![npm version](https://img.shields.io/npm/v/@cryozerolabs/n8n-nodes-dingtalk)](https://www.npmjs.com/package/@cryozerolabs/n8n-nodes-dingtalk)
+[![npm downloads (18 months)](https://img.shields.io/npm/d18m/%40cryozerolabs%2Fn8n-nodes-dingtalk)](https://www.npmjs.com/package/@cryozerolabs/n8n-nodes-dingtalk)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Twitter Follow](https://img.shields.io/twitter/follow/cryozerolabs?style=flat)](https://twitter.com/cryozerolabs)
 
 这是一个钉钉（DingTalk）的 n8n 社区节点，让你可以在 n8n 工作流中集成钉钉开放平台的各种 API。
 
@@ -235,6 +237,7 @@
   - 数据表完整 CRUD 操作
   - 记录完整 CRUD 操作
   - 访问令牌获取
+- **机器人发送群聊消息** ([基础_机器人发送群聊消息_v0.11.0.json](examples/基础_机器人发送群聊消息_v0.11.0.json)) - 演示文本、Markdown、ActionCard，以及文件上传后发送到群聊
 - **更多示例正在开发中** - 用户管理、身份验证、扩展功能等
 
 ### 导入工作流
@@ -246,7 +249,7 @@
 
 ### 已知问题
 
-- 暂无已知的版本兼容性问题
+- 升级提示：机器人 API 方式的独立跳转按钮要求竖排 2–5 个或横排 2 个；FeedCard 请使用自定义机器人 Webhook 操作
 - 如遇到问题，请提交 [GitHub Issue](https://github.com/cryozerolabs/n8n-nodes-dingtalk/issues)
 
 ## 📚 相关资源
@@ -271,6 +274,12 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+### v0.11.0
+
+- 新增：机器人群聊消息发送、媒体文件上传，并支持图片、语音、文件、视频及自定义消息。
+
+感谢 [@Reol077](https://github.com/Reol077) 在 [#45](https://github.com/cryozerolabs/n8n-nodes-dingtalk/pull/45) 中的贡献。
 
 ### v0.10.0
 
@@ -446,8 +455,28 @@ npm run release
 
 感谢以下开发者对本项目做出的贡献：
 
-- [daixin](https://github.com/daixin)
-- [songlipeng2003](https://github.com/songlipeng2003)
+<table>
+  <tr>
+    <td align="center" width="120">
+      <a href="https://github.com/daixin">
+        <img src="https://github.com/daixin.png?size=80" width="64" height="64" alt="daixin" /><br />
+        <sub><b>daixin</b></sub>
+      </a>
+    </td>
+    <td align="center" width="120">
+      <a href="https://github.com/songlipeng2003">
+        <img src="https://github.com/songlipeng2003.png?size=80" width="64" height="64" alt="songlipeng2003" /><br />
+        <sub><b>songlipeng2003</b></sub>
+      </a>
+    </td>
+    <td align="center" width="120">
+      <a href="https://github.com/Reol077">
+        <img src="https://github.com/Reol077.png?size=80" width="64" height="64" alt="Reol077" /><br />
+        <sub><b>Reol077</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## 📄 许可证
 

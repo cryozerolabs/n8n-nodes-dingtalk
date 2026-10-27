@@ -1,5 +1,5 @@
 {
-  "name": "基础_机器人发送群聊消息_v0.10.0",
+  "name": "基础_机器人发送群聊消息_v0.11.0",
   "nodes": [
     {
       "parameters": {},
@@ -11,7 +11,7 @@
     },
     {
       "parameters": {
-        "fileName": "/path/to/report.xlsx"
+        "filePath": "/path/to/report.xlsx"
       },
       "type": "n8n-nodes-base.readBinaryFile",
       "typeVersion": 1,
