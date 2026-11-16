@@ -41,7 +41,7 @@ https://raw.githubusercontent.com/cryozerolabs/n8n-nodes-dingtalk/main/examples/
 
 导入工作流后，你需要：
 
-1. **配置钉钉 API 凭据**（Corp ID、Client ID 和 Client Secret）
+1. **配置钉钉 API 凭据**（Client ID 和 Client Secret）
 2. **调整实际参数**：
    - 修改示例中的 AI 表格 URL 为你的真实表格链接
    - 设置正确的用户 ID（用于获取 unionId）

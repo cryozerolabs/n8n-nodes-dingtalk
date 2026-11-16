@@ -152,7 +152,7 @@
 
 在 n8n 中创建 **钉钉 API** 凭据：
 
-- **Corp ID**: 你的钉钉应用运行的组织ID，在[钉钉开放平台开发者后台](https://open-dev.dingtalk.com/)获取
+- **Corp ID**: 钉钉组织 ID，仅在“获取当前应用的 Access Token”操作中作为附加信息返回，不参与鉴权
 - **Client ID**: 你的钉钉应用 ClientId
 - **Client Secret**: 你的钉钉应用 ClientSecret
 - **操作人 unionId（可选）**: 如果已经拿到常用操作人的 unionId，可在此填写，节点会默认复用，可以通过 用户管理 查询用户详情 节点获取后回写到凭证中；也可留空，后续在节点中按需覆盖；
@@ -274,6 +274,10 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+### v0.11.1
+
+- 修复：Dingtalk API 凭证中的组织 ID（Corp ID）改为选填。
 
 ### v0.11.0
 
