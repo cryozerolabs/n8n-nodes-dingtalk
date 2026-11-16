@@ -1,0 +1,97 @@
+{
+  "name": "基础_Stream事件响应",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "stream.push",
+        "responseMode": "responseNode",
+        "responseTimeout": 60
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNodeTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "stream-trigger",
+      "name": "Stream 事件订阅"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [240, 0],
+      "id": "receive-step",
+      "name": "接收处理"
+    },
+    {
+      "parameters": {
+        "status": "SUCCESS",
+        "message": "事件接收完成",
+        "resource": "stream",
+        "operation": "stream.respond"
+      },
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [480, 0],
+      "id": "stream-response",
+      "name": "确认 Stream 事件"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [720, 0],
+      "id": "business-step",
+      "name": "后续业务"
+    },
+    {
+      "parameters": {
+        "content": "## Stream 事件响应\n将需要先完成的步骤放到响应节点之前。\n“接收处理”和“后续业务”是占位节点，按实际需要替换。\n响应节点设为 SUCCESS 表示消费成功；设为 LATER 可测试失败重投。\n未执行响应节点时，执行结束或等待超时会回复 LATER。",
+        "height": 220,
+        "width": 760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [0, -280],
+      "id": "usage-note",
+      "name": "使用说明"
+    }
+  ],
+  "connections": {
+    "Stream 事件订阅": {
+      "main": [
+        [
+          {
+            "node": "接收处理",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收处理": {
+      "main": [
+        [
+          {
+            "node": "确认 Stream 事件",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "确认 Stream 事件": {
+      "main": [
+        [
+          {
+            "node": "后续业务",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

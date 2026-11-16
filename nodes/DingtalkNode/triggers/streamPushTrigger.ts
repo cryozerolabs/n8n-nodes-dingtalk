@@ -7,6 +7,7 @@ import {
   type ITriggerFunctions,
   type ITriggerResponse,
 } from 'n8n-workflow';
+import { waitForStreamEventResponse } from '../resources/stream/common';
 
 // DingTalk's Stream gateway meta. Ticket validity isn't documented precisely, so we reconnect
 // whenever the socket closes or fails.
@@ -67,8 +68,28 @@ function safeParse(payload: string | undefined): unknown {
   }
 }
 
-// Keep exported for future per-trigger parameters; presently the Stream trigger has no options.
-export const streamPushTriggerOptions: INodeProperties[] = [];
+export const streamPushTriggerOptions: INodeProperties[] = [
+  {
+    displayName: '事件响应方式',
+    name: 'responseMode',
+    type: 'options',
+    default: '',
+    options: [
+      { name: '立即响应', value: '' },
+      { name: '使用响应节点', value: 'responseNode' },
+    ],
+    description: '仅影响 EVENT 事件；使用响应节点时，由“事件订阅 → 响应事件”操作决定确认时机',
+  },
+  {
+    displayName: '响应等待时间（秒）',
+    name: 'responseTimeout',
+    type: 'number',
+    default: 60,
+    typeOptions: { minValue: 1, maxValue: 3600 },
+    displayOptions: { show: { responseMode: ['responseNode'] } },
+    description: '超过等待时间仍未收到响应节点的回复时，向钉钉回复 LATER',
+  },
+];
 
 export async function runStreamPushTrigger(
   this: ITriggerFunctions,
@@ -85,6 +106,19 @@ export async function runStreamPushTrigger(
       'Missing DingTalk credentials. Please configure Client ID and Client Secret.',
     );
   }
+
+  const responseMode = this.getNodeParameter('responseMode', '') as string;
+  const responseTimeout =
+    responseMode === 'responseNode' ? (this.getNodeParameter('responseTimeout', 60) as number) : 60;
+  if (
+    responseMode === 'responseNode' &&
+    (!Number.isInteger(responseTimeout) || responseTimeout < 1 || responseTimeout > 3600)
+  ) {
+    throw new NodeOperationError(this.getNode(), '响应等待时间必须是 1 到 3600 之间的整数秒');
+  }
+  const responseShutdown = new AbortController();
+  const pendingResponses = new Set<Promise<void>>();
+  let manualResponseClosing = false;
 
   const subscriptions = [
     { type: 'EVENT', topic: '*' },
@@ -144,7 +178,11 @@ export async function runStreamPushTrigger(
   };
 
   // Push the inbound payload into the workflow; the original JSON string is returned in rawData.
-  const emitMessage = (message: DownstreamMessage) => {
+  const emitMessage = (
+    message: DownstreamMessage,
+    response?: Parameters<ITriggerFunctions['emit']>[1],
+    completion?: Parameters<ITriggerFunctions['emit']>[2],
+  ) => {
     const parsedData = safeParse(message.data);
     const payload: IDataObject = {
       type: message.type,
@@ -155,7 +193,7 @@ export async function runStreamPushTrigger(
       receivedAt: new Date().toISOString(),
     };
 
-    this.emit([this.helpers.returnJsonArray([payload])]);
+    this.emit([this.helpers.returnJsonArray([payload])], response, completion);
     resolveManualIfPending();
   };
 
@@ -171,8 +209,32 @@ export async function runStreamPushTrigger(
     }
   };
 
-  // For normal events we emit and immediately ACK SUCCESS.
+  // Old workflows without a response mode retain immediate acknowledgement.
   const handleEventMessage = (message: DownstreamMessage) => {
+    if (message.type === 'EVENT' && responseMode === 'responseNode') {
+      if (manualResponseClosing || responseShutdown.signal.aborted) return;
+      const sourceSocket = socket;
+      const responseTask = waitForStreamEventResponse(
+        this,
+        (response, completion) => emitMessage(message, response, completion),
+        responseShutdown.signal,
+        responseTimeout,
+      )
+        .then((ack) => {
+          // A delayed response belongs to the connection which delivered this event.
+          if (shouldStayConnected && socket === sourceSocket)
+            sendEventAck(message.headers, { ...ack });
+        })
+        .catch((error: unknown) => {
+          this.logger.error('Failed to send DingTalk Stream event response', {
+            messageId: message.headers.messageId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      pendingResponses.add(responseTask);
+      void responseTask.then(() => pendingResponses.delete(responseTask));
+      return;
+    }
     emitMessage(message);
 
     sendEventAck(message.headers, { status: 'SUCCESS' });
@@ -460,7 +522,13 @@ export async function runStreamPushTrigger(
       });
     },
     closeFunction: async () => {
+      // n8n starts manual trigger teardown before downstream nodes execute.
+      if (this.getMode() === 'manual' && pendingResponses.size > 0 && !manualResponseClosing) {
+        manualResponseClosing = true;
+        await Promise.allSettled([...pendingResponses]);
+      }
       shouldStayConnected = false;
+      responseShutdown.abort();
       reconnectQueued = false;
       if (pendingSocket) {
         logDebug('DingTalk stream closing pending socket');

@@ -125,6 +125,7 @@
 ![Stream Push](docs/images/stream-push-guide.png)
 
 - **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
+- **事件响应** - 默认立即响应，也可使用“事件订阅 → 响应事件”节点回复 `SUCCESS` 或 `LATER`（[示例](examples/基础_Stream事件响应.json)）。
 
 ## 🚀 安装指南
 
@@ -274,6 +275,10 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+### v0.12.0
+
+- 新增：Stream 响应节点，支持回复 `SUCCESS` 或 `LATER`；旧工作流保持立即响应。
 
 ### v0.11.1
 
