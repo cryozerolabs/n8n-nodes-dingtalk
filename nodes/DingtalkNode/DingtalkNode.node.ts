@@ -12,6 +12,7 @@ import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
 import apiBundle from './resources/api';
 import authBundle from './resources/auth';
+import departmentBundle from './resources/department';
 import docBundle from './resources/doc';
 import notableBundle from './resources/notable';
 import robotBundle from './resources/robot';
@@ -25,6 +26,7 @@ import workbooksBundle from './resources/workbooks';
 const bundles: ResourceBundle[] = [
   apiBundle,
   authBundle,
+  departmentBundle,
   docBundle,
   notableBundle,
   robotBundle,
