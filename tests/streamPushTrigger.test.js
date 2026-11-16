@@ -18,6 +18,13 @@ function deferred() {
 const flush = () => new Promise(setImmediate);
 const successfulRun = () => ({ status: 'success', finished: true, data: { resultData: {} } });
 
+function clock(t, random = 0) {
+  let now = 0;
+  t.mock.method(Date, 'now', () => now);
+  t.mock.method(Math, 'random', () => random);
+  return { advance: (milliseconds) => (now += milliseconds) };
+}
+
 function event(eventId = 'department-event-1', messageId = 'delivery-1', extraHeaders = {}) {
   return {
     specVersion: '1.0',
@@ -40,6 +47,8 @@ async function fixture(t, options = {}) {
   const sockets = [];
   const emissions = [];
   const logs = [];
+  const requests = [];
+  const crons = [];
   let response;
 
   class FakeWebSocket {
@@ -55,7 +64,12 @@ async function fixture(t, options = {}) {
     constructor(url) {
       this.url = url;
       sockets.push(this);
-      queueMicrotask(() => this.open());
+      this.index = sockets.length;
+      const autoOpen =
+        typeof options.autoOpen === 'function'
+          ? options.autoOpen(this.index)
+          : options.autoOpen !== false;
+      if (autoOpen) queueMicrotask(() => this.open());
     }
     addEventListener(name, listener) {
       if (!this.listeners.has(name)) this.listeners.set(name, new Set());
@@ -71,6 +85,7 @@ async function fixture(t, options = {}) {
       if (this.readyState !== FakeWebSocket.CONNECTING) return;
       this.readyState = FakeWebSocket.OPEN;
       this.dispatch('open', {});
+      options.onOpen?.(this);
     }
     receive(payload) {
       this.dispatch('message', {
@@ -84,6 +99,10 @@ async function fixture(t, options = {}) {
     }
     close() {
       this.closeCalls++;
+      if (options.closeStalls) {
+        this.readyState = FakeWebSocket.CLOSING;
+        return;
+      }
       this.readyState = FakeWebSocket.CLOSED;
       this.dispatch('close', { code: 1000, reason: '', wasClean: true });
     }
@@ -113,8 +132,12 @@ async function fixture(t, options = {}) {
     helpers: {
       createDeferredPromise: deferred,
       returnJsonArray: (items) => items.map((json) => ({ json })),
-      registerCron() {},
-      async httpRequest() {
+      registerCron(cron, callback) {
+        crons.push({ expression: cron.expression, callback });
+      },
+      async httpRequest(request) {
+        requests.push(request);
+        if (options.httpRequest) return await options.httpRequest(request, requests.length);
         return { endpoint: 'wss://stream.test/connect', ticket: 'test-ticket' };
       },
     },
@@ -138,7 +161,14 @@ async function fixture(t, options = {}) {
     sockets,
     emissions,
     logs,
+    requests,
+    crons,
     context,
+    tick(expression = '* * * * * *') {
+      const cron = crons.find((entry) => entry.expression === expression);
+      assert.ok(cron, `registered cron ${expression}`);
+      cron.callback(new Date());
+    },
     get response() {
       return response;
     },
@@ -355,9 +385,14 @@ test('only the first explicit response is sent', async (t) => {
 });
 
 test('a delayed ACK is not sent over a replacement connection', async (t) => {
+  const time = clock(t);
   const f = await fixture(t, { responseMode: 'responseNode' });
   f.sockets[0].receive(event());
   f.sockets[0].close();
+  await flush();
+  assert.equal(f.sockets.length, 1);
+  time.advance(1000);
+  f.tick();
   await flush();
   assert.equal(f.sockets.length, 2);
   f.emissions[0].responsePromise.resolve(reply());
@@ -443,12 +478,15 @@ test('manual execution keeps the connection until its response node replies', as
   const f = await fixture(t, { mode: 'manual', responseMode: 'responseNode' });
   f.sockets[0].receive(event());
   const closing = f.response.closeFunction();
+  const closingAgain = f.response.closeFunction();
+  assert.strictEqual(closing, closingAgain);
   assert.equal(f.sockets[0].closeCalls, 0);
   // Manual trigger output resolves once; later arrivals must not share that execution's reply.
   f.sockets[0].receive(event('event-2', 'delivery-2'));
   assert.equal(f.emissions.length, 1);
   await executeResponse(responseContext(f));
   await closing;
+  await closingAgain;
   assert.equal(acks(f)[0].status, 'SUCCESS');
   assert.equal(f.sockets[0].closeCalls, 1);
 });
@@ -471,6 +509,236 @@ test('an empty input does not send a response', async () => {
     },
   });
   assert.deepEqual(result, [[]]);
+});
+
+test('gateway timeout releases the attempt and ignores a late ticket', async (t) => {
+  const gateway = deferred();
+  const deadline = new AbortController();
+  let request;
+  t.mock.method(AbortSignal, 'timeout', (milliseconds) => {
+    assert.equal(milliseconds, 10_000);
+    return deadline.signal;
+  });
+  const starting = fixture(t, {
+    httpRequest: (options) => {
+      request = options;
+      return gateway.promise;
+    },
+  });
+  await flush();
+  assert.equal(request.timeout, 10_000);
+  assert.equal(request.abortSignal.aborted, false);
+  deadline.abort(new Error('connection deadline exceeded'));
+  const f = await starting;
+  assert.equal(request.abortSignal.aborted, true);
+  assert.equal(f.sockets.length, 0);
+  assert.equal(f.logs.filter((entry) => entry.level === 'warn').length, 2);
+  gateway.resolve({ endpoint: 'wss://stream.test/connect', ticket: 'late-ticket' });
+  await flush();
+  assert.equal(f.sockets.length, 0);
+});
+
+test('the connection deadline also bounds the handshake and removes its listeners', async (t) => {
+  const deadline = new AbortController();
+  let deadlines = 0;
+  t.mock.method(AbortSignal, 'timeout', (milliseconds) => {
+    assert.equal(milliseconds, 10_000);
+    deadlines++;
+    return deadline.signal;
+  });
+  const starting = fixture(t, { autoOpen: false });
+  await flush();
+  deadline.abort(new Error('handshake deadline exceeded'));
+  const f = await starting;
+  const abandoned = f.sockets[0];
+  assert.equal(deadlines, 1, 'ticket and handshake share one deadline');
+  assert.equal(abandoned.closeCalls, 1);
+  assert.equal(
+    [...abandoned.listeners.values()].every((listeners) => listeners.size === 0),
+    true,
+  );
+  abandoned.readyState = WebSocket.OPEN;
+  abandoned.dispatch('open', {});
+  abandoned.receive(event());
+  assert.equal(f.emissions.length, 0);
+  assert.equal(abandoned.sent.length, 0);
+});
+
+test('failed connections back off, stay bounded, and reset after a successful connection', async (t) => {
+  const time = clock(t);
+  const f = await fixture(t, {
+    httpRequest: (_request, attempt) => {
+      if (attempt <= 8) throw new Error('gateway unavailable');
+      return { endpoint: 'wss://stream.test/connect', ticket: `ticket-${attempt}` };
+    },
+  });
+  for (const delay of [1000, 2000, 4000, 8000, 16000, 32000, 60000, 60000]) {
+    const before = f.requests.length;
+    time.advance(delay - 1);
+    f.tick();
+    await flush();
+    assert.equal(f.requests.length, before, 'no retry before its deadline');
+    time.advance(1);
+    f.tick();
+    f.tick();
+    await flush();
+    assert.equal(f.requests.length, before + 1, 'one retry per deadline');
+  }
+  assert.equal(f.sockets.length, 1);
+  assert.equal(new Set(f.requests.map((request) => request.abortSignal)).size, f.requests.length);
+  f.sockets[0].close();
+  time.advance(999);
+  f.tick();
+  await flush();
+  assert.equal(f.requests.length, 9);
+  time.advance(1);
+  f.tick();
+  await flush();
+  assert.equal(f.requests.length, 10, 'successful connection resets backoff');
+  assert.match(f.sockets[1].url, /ticket=ticket-10$/);
+});
+
+test('reconnect jitter delays the next attempt instead of retrying immediately', async (t) => {
+  const time = clock(t, 0.5);
+  const f = await fixture(t);
+  f.sockets[0].close();
+  time.advance(1499);
+  f.tick();
+  await flush();
+  assert.equal(f.requests.length, 1);
+  time.advance(1);
+  f.tick();
+  await flush();
+  assert.equal(f.requests.length, 2);
+});
+
+test('socket errors recover even when close stalls and stale callbacks cannot affect the replacement', async (t) => {
+  const time = clock(t);
+  const f = await fixture(t, { closeStalls: true });
+  const abandoned = f.sockets[0];
+  const lateMessage = [...abandoned.listeners.get('message')][0];
+  const lateError = [...abandoned.listeners.get('error')][0];
+  abandoned.dispatch('error', { error: new Error('connection failed') });
+  abandoned.dispatch('close', {});
+  assert.equal(abandoned.readyState, WebSocket.CLOSING);
+  assert.equal(abandoned.closeCalls, 1);
+  assert.equal(
+    [...abandoned.listeners.values()].every((listeners) => listeners.size === 0),
+    true,
+  );
+  time.advance(1000);
+  f.tick();
+  await flush();
+  assert.equal(f.sockets.length, 2);
+  lateMessage({ data: JSON.stringify(event()) });
+  lateError({ error: new Error('late socket error') });
+  abandoned.dispatch('close', {});
+  assert.equal(f.emissions.length, 0);
+  f.sockets[1].receive(event('replacement-event', 'replacement-delivery'));
+  assert.equal(f.emissions.length, 1);
+  assert.equal(f.sockets[1].acknowledgements().length, 1);
+  assert.equal(f.requests.length, 2);
+});
+
+test('stopping during a ticket request cancels it and never opens a late connection', async (t) => {
+  const time = clock(t);
+  const gateway = deferred();
+  const f = await fixture(t, {
+    httpRequest: (_request, attempt) =>
+      attempt === 1
+        ? { endpoint: 'wss://stream.test/connect', ticket: 'first-ticket' }
+        : gateway.promise,
+  });
+  f.sockets[0].close();
+  time.advance(1000);
+  f.tick();
+  await flush();
+  f.tick();
+  f.tick();
+  assert.equal(f.requests.length, 2);
+  await f.response.closeFunction();
+  assert.equal(f.requests[1].abortSignal.aborted, true);
+  gateway.resolve({ endpoint: 'wss://stream.test/connect', ticket: 'late-ticket' });
+  await flush();
+  time.advance(600_000);
+  f.tick();
+  f.tick('*/30 * * * * *');
+  await flush();
+  assert.equal(f.requests.length, 2);
+  assert.equal(f.sockets.length, 1);
+});
+
+test('stopping during a handshake closes it and prevents late messages or retries', async (t) => {
+  const time = clock(t);
+  const f = await fixture(t, { autoOpen: (index) => index === 1 });
+  const oldMessage = [...f.sockets[0].listeners.get('message')][0];
+  f.sockets[0].close();
+  time.advance(1000);
+  f.tick();
+  await flush();
+  const pending = f.sockets[1];
+  assert.equal(pending.readyState, WebSocket.CONNECTING);
+  await f.response.closeFunction();
+  assert.equal(pending.closeCalls, 1);
+  assert.equal(
+    [...pending.listeners.values()].every((listeners) => listeners.size === 0),
+    true,
+  );
+  pending.readyState = WebSocket.OPEN;
+  pending.dispatch('open', {});
+  pending.receive(event());
+  oldMessage({ data: JSON.stringify(event()) });
+  time.advance(600_000);
+  f.tick();
+  await flush();
+  assert.equal(f.emissions.length, 0);
+  assert.equal(f.requests.length, 2);
+});
+
+test('a socket closing immediately after open is never installed as a live connection', async (t) => {
+  const time = clock(t);
+  const f = await fixture(t, {
+    onOpen: (socket) => {
+      if (socket.index === 1) socket.close();
+    },
+  });
+  f.sockets[0].receive(event());
+  assert.equal(f.emissions.length, 0);
+  time.advance(1000);
+  f.tick();
+  await flush();
+  f.sockets[1].receive(event());
+  assert.equal(f.emissions.length, 1);
+});
+
+test('heartbeat keeps its 30 second registration and does not act as an active probe', async (t) => {
+  const f = await fixture(t);
+  assert.deepEqual(f.crons.map((cron) => cron.expression).sort(), [
+    '* * * * * *',
+    '*/30 * * * * *',
+  ]);
+  f.tick();
+  assert.deepEqual(f.sockets[0].sent, []);
+  f.tick('*/30 * * * * *');
+  assert.deepEqual(f.sockets[0].sent, ['ping']);
+  await f.response.closeFunction();
+  f.tick('*/30 * * * * *');
+  assert.deepEqual(f.sockets[0].sent, ['ping']);
+});
+
+test('heartbeat send failure uses the same cleanup and backoff without waiting for close', async (t) => {
+  const time = clock(t);
+  const f = await fixture(t, { closeStalls: true });
+  f.sockets[0].sendError = new Error('write failed');
+  f.tick('*/30 * * * * *');
+  assert.equal(f.sockets[0].closeCalls, 1);
+  assert.equal(f.requests.length, 1);
+  time.advance(1000);
+  f.tick();
+  await flush();
+  assert.equal(f.sockets.length, 2);
+  f.sockets[1].receive(event());
+  assert.equal(f.emissions.length, 1);
 });
 
 test('response operation follows resource registration and is placed before later business steps', () => {

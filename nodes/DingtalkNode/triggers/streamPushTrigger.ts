@@ -1,4 +1,3 @@
-/* eslint-disable @n8n/community-nodes/no-restricted-globals */
 import {
   NodeOperationError,
   type CronExpression,
@@ -9,12 +8,15 @@ import {
 } from 'n8n-workflow';
 import { waitForStreamEventResponse } from '../resources/stream/common';
 
-// DingTalk's Stream gateway meta. Ticket validity isn't documented precisely, so we reconnect
-// whenever the socket closes or fails.
+// Obtain a fresh endpoint and single-use ticket for every connection attempt.
 const GATEWAY_URL = 'https://api.dingtalk.com/v1.0/gateway/connections/open';
 const USER_AGENT = 'n8n-nodes-dingtalk-trigger';
 const CLIENT_PING_INTERVAL_SECONDS = 30;
 const CRON_EXPRESSION: CronExpression = `*/${CLIENT_PING_INTERVAL_SECONDS} * * * * *`;
+const RECONNECT_CRON_EXPRESSION: CronExpression = '* * * * * *';
+const CONNECTION_TIMEOUT_MS = 10_000;
+const RECONNECT_BASE_DELAY_MS = 1_000;
+const RECONNECT_MAX_DELAY_MS = 60_000;
 const DEBUG_STREAM = false;
 
 interface DingtalkCredentials {
@@ -66,6 +68,28 @@ function safeParse(payload: string | undefined): unknown {
   } catch {
     return payload;
   }
+}
+
+function waitWithAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(signal.reason);
+    const cleanup = () => signal.removeEventListener('abort', onAbort);
+    signal.addEventListener('abort', onAbort, { once: true });
+    void operation.then(
+      (value) => {
+        cleanup();
+        resolve(value);
+      },
+      (error: unknown) => {
+        cleanup();
+        reject(error);
+      },
+    );
+    if (signal.aborted) {
+      cleanup();
+      onAbort();
+    }
+  });
 }
 
 export const streamPushTriggerOptions: INodeProperties[] = [
@@ -128,9 +152,13 @@ export async function runStreamPushTrigger(
   let socket: WebSocket | null = null;
   let pendingSocket: WebSocket | null = null;
   let shouldStayConnected = true;
-  let connectInProgress = false;
+  let connectionTask: Promise<void> | null = null;
+  let connectionAbort: AbortController | null = null;
+  let cleanupSocketListeners: (() => void) | null = null;
   let manualResolve: (() => void) | null = null;
-  let reconnectQueued = false;
+  let nextReconnectAt: number | null = null;
+  let reconnectAttempts = 0;
+  let closePromise: Promise<void> | null = null;
   let cronRegistered = false;
 
   const resolveManualIfPending = () => {
@@ -173,7 +201,7 @@ export async function runStreamPushTrigger(
       logDebug('DingTalk stream client ping send failed; closing socket', {
         error: error instanceof Error ? error.message : String(error),
       });
-      markSocketForClose(socket);
+      disconnectSocket(socket, 'ping-send-failed');
     }
   };
 
@@ -315,41 +343,80 @@ export async function runStreamPushTrigger(
   };
 
   const scheduleReconnect = (reason: string) => {
-    if (!shouldStayConnected) return;
-    if (reconnectQueued) return;
-    reconnectQueued = true;
-    logDebug('DingTalk stream reconnect queued', { reason });
-    void Promise.resolve().then(async () => {
-      reconnectQueued = false;
-      await connect();
+    if (!shouldStayConnected || manualResponseClosing || nextReconnectAt !== null) return;
+    const delayMs = Math.min(
+      RECONNECT_BASE_DELAY_MS * 2 ** Math.min(reconnectAttempts, 6) +
+        Math.floor(Math.random() * RECONNECT_BASE_DELAY_MS),
+      RECONNECT_MAX_DELAY_MS,
+    );
+    reconnectAttempts++;
+    nextReconnectAt = Date.now() + delayMs;
+    this.logger.warn('DingTalk stream reconnect scheduled', {
+      reason,
+      delayMs,
+      attempt: reconnectAttempts,
     });
   };
 
   const markSocketForClose = (target: WebSocket) => {
-    target.close();
+    if (target.readyState === WebSocket.CLOSED || target.readyState === WebSocket.CLOSING) return;
+    try {
+      target.close();
+    } catch (error) {
+      this.logger.warn('Failed to close DingTalk stream socket', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   };
 
-  const connect = async (): Promise<void> => {
-    if (!shouldStayConnected || connectInProgress) return;
-    connectInProgress = true;
+  const releaseSocket = (target: WebSocket) => {
+    if (socket === target) {
+      socket = null;
+      cleanupSocketListeners?.();
+      cleanupSocketListeners = null;
+    }
+    if (pendingSocket === target) pendingSocket = null;
+    markSocketForClose(target);
+  };
+
+  const disconnectSocket = (target: WebSocket, reason: string) => {
+    if (socket !== target) return;
+    releaseSocket(target);
+    scheduleReconnect(reason);
+  };
+
+  const openConnection = async (): Promise<void> => {
+    const controller = new AbortController();
+    connectionAbort = controller;
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(CONNECTION_TIMEOUT_MS)]);
+    let attemptSocket: WebSocket | null = null;
+    let cleanupHandshake: (() => void) | undefined;
     logDebug('DingTalk stream connecting');
     try {
       // Step 1: ask DingTalk for a temporary WebSocket endpoint + ticket.
       logDebug('DingTalk stream requesting gateway endpoint');
-      const gatewayResponse = (await this.helpers.httpRequest({
-        method: 'POST',
-        url: GATEWAY_URL,
-        body: {
-          clientId: credentials.clientId,
-          clientSecret: credentials.clientSecret,
-          ua: USER_AGENT,
-          subscriptions,
-        },
-        json: true,
-        headers: {
-          Accept: 'application/json',
-        },
-      })) as GatewayResponse;
+      const gatewayResponse = (await waitWithAbort(
+        this.helpers.httpRequest({
+          method: 'POST',
+          url: GATEWAY_URL,
+          body: {
+            clientId: credentials.clientId,
+            clientSecret: credentials.clientSecret,
+            ua: USER_AGENT,
+            subscriptions,
+          },
+          json: true,
+          timeout: CONNECTION_TIMEOUT_MS,
+          abortSignal: signal,
+          headers: {
+            Accept: 'application/json',
+          },
+        }),
+        signal,
+      )) as GatewayResponse;
+
+      signal.throwIfAborted();
+      if (!shouldStayConnected || manualResponseClosing) return;
 
       if (!gatewayResponse?.endpoint || !gatewayResponse.ticket) {
         throw new NodeOperationError(
@@ -361,9 +428,10 @@ export async function runStreamPushTrigger(
       const url = `${gatewayResponse.endpoint}?ticket=${gatewayResponse.ticket}`;
 
       const ws = new WebSocket(url);
+      attemptSocket = ws;
       pendingSocket = ws;
 
-      await new Promise<void>((resolve, reject) => {
+      const opening = new Promise<void>((resolve, reject) => {
         let settled = false;
 
         const cleanup = () => {
@@ -371,6 +439,7 @@ export async function runStreamPushTrigger(
           ws.removeEventListener('error', handleError);
           ws.removeEventListener('close', handleClose);
         };
+        cleanupHandshake = cleanup;
 
         const handleOpen = () => {
           if (settled) return;
@@ -409,27 +478,25 @@ export async function runStreamPushTrigger(
         ws.addEventListener('error', handleError);
         ws.addEventListener('close', handleClose);
       });
+      await waitWithAbort(opening, signal);
+      signal.throwIfAborted();
 
-      if (!shouldStayConnected) {
+      if (!shouldStayConnected || manualResponseClosing) {
         logDebug('DingTalk stream connect aborted; trigger stopping');
-        markSocketForClose(ws);
-        pendingSocket = null;
         return;
       }
-
-      if (
-        socket &&
-        socket.readyState !== WebSocket.CLOSED &&
-        socket.readyState !== WebSocket.CLOSING
-      ) {
-        markSocketForClose(socket);
+      if (ws.readyState !== WebSocket.OPEN) {
+        throw new Error('WebSocket closed before activation');
       }
 
+      if (socket) releaseSocket(socket);
       socket = ws;
       pendingSocket = null;
-      logDebug('DingTalk stream connected');
+      reconnectAttempts = 0;
+      nextReconnectAt = null;
 
-      ws.addEventListener('message', (event: MessageEvent) => {
+      const handleMessage = (event: MessageEvent) => {
+        if (!shouldStayConnected || socket !== ws) return;
         if (typeof event.data === 'string') {
           handleDownstream(event.data);
         } else if (event.data instanceof ArrayBuffer) {
@@ -437,33 +504,20 @@ export async function runStreamPushTrigger(
         } else {
           handleDownstream(String(event.data));
         }
-      });
-
-      const clearSocketReferences = () => {
-        if (socket === ws) {
-          socket = null;
-        }
-        if (pendingSocket === ws) {
-          pendingSocket = null;
-        }
       };
 
-      ws.addEventListener('close', (event: CloseEvent) => {
-        if (socket !== ws && pendingSocket !== ws) {
-          return;
-        }
-        clearSocketReferences();
+      const handleClose = (event: CloseEvent) => {
+        if (socket !== ws) return;
         logDebug('DingTalk stream closed', {
           code: event.code,
           reason: event.reason,
           wasClean: event.wasClean,
         });
-        if (shouldStayConnected) {
-          scheduleReconnect('socket-close');
-        }
-      });
+        disconnectSocket(ws, 'socket-close');
+      };
 
-      ws.addEventListener('error', (event: Event | ErrorEvent) => {
+      const handleError = (event: Event | ErrorEvent) => {
+        if (!shouldStayConnected || socket !== ws) return;
         const err = 'error' in event ? event.error : event;
         if (err instanceof Error || typeof err === 'string') {
           this.logger?.error?.('DingTalk stream socket error', {
@@ -472,38 +526,62 @@ export async function runStreamPushTrigger(
         } else {
           this.logger?.error?.('DingTalk stream socket error');
         }
-        if (
-          (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) &&
-          (socket === ws || pendingSocket === ws)
-        ) {
-          logDebug('DingTalk stream socket error; closing socket');
-          markSocketForClose(ws);
-        }
-      });
+        disconnectSocket(ws, 'socket-error');
+      };
+
+      cleanupSocketListeners = () => {
+        ws.removeEventListener('message', handleMessage);
+        ws.removeEventListener('close', handleClose);
+        ws.removeEventListener('error', handleError);
+      };
+      ws.addEventListener('message', handleMessage);
+      ws.addEventListener('close', handleClose);
+      ws.addEventListener('error', handleError);
+      logDebug('DingTalk stream connected');
     } catch (error) {
+      if (!shouldStayConnected || manualResponseClosing || controller.signal.aborted) return;
       const errMessage =
         error instanceof Error ? error.message : 'Unknown error opening DingTalk stream.';
       this.logger.warn('Failed to connect DingTalk stream websocket', { error: errMessage });
-      pendingSocket = null;
       scheduleReconnect('connect-failed');
     } finally {
-      connectInProgress = false;
+      cleanupHandshake?.();
+      if (attemptSocket && socket !== attemptSocket) releaseSocket(attemptSocket);
+      if (connectionAbort === controller) connectionAbort = null;
     }
+  };
+
+  const connect = (): Promise<void> => {
+    if (!shouldStayConnected || manualResponseClosing) return Promise.resolve();
+    if (connectionTask) return connectionTask;
+    nextReconnectAt = null;
+    const task = openConnection();
+    connectionTask = task;
+    const clearTask = () => {
+      if (connectionTask === task) connectionTask = null;
+    };
+    void task.then(clearTask, clearTask);
+    return task;
   };
 
   const onCronTick = () => {
     if (!shouldStayConnected) return;
     sendClientPing();
-    if (!connectInProgress && (!socket || socket.readyState === WebSocket.CLOSED)) {
-      logDebug('DingTalk stream reconnect due; starting new connection');
-      void connect();
-    }
+  };
+
+  const onReconnectTick = () => {
+    if (!shouldStayConnected || manualResponseClosing || connectionTask) return;
+    if (socket?.readyState === WebSocket.OPEN) return;
+    if (socket) releaseSocket(socket);
+    if (nextReconnectAt === null) scheduleReconnect('socket-not-open');
+    if (nextReconnectAt !== null && Date.now() >= nextReconnectAt) void connect();
   };
 
   const ensureCron = () => {
     if (cronRegistered) return;
     cronRegistered = true;
     this.helpers.registerCron({ expression: CRON_EXPRESSION }, onCronTick);
+    this.helpers.registerCron({ expression: RECONNECT_CRON_EXPRESSION }, onReconnectTick);
     logDebug('DingTalk stream cron registered', { expression: CRON_EXPRESSION });
   };
 
@@ -514,6 +592,24 @@ export async function runStreamPushTrigger(
   ensureCron();
   await connect();
 
+  const close = async () => {
+    // n8n starts manual trigger teardown before downstream nodes execute.
+    if (this.getMode() === 'manual' && pendingResponses.size > 0 && !manualResponseClosing) {
+      manualResponseClosing = true;
+      nextReconnectAt = null;
+      await Promise.allSettled([...pendingResponses]);
+    }
+    shouldStayConnected = false;
+    nextReconnectAt = null;
+    reconnectAttempts = 0;
+    connectionAbort?.abort(new Error('DingTalk stream trigger stopped'));
+    responseShutdown.abort();
+    resolveManualIfPending();
+    if (pendingSocket) releaseSocket(pendingSocket);
+    if (socket) releaseSocket(socket);
+    if (connectionTask) await connectionTask;
+  };
+
   return {
     manualTriggerFunction: async () => {
       await new Promise<void>((resolve) => {
@@ -521,26 +617,9 @@ export async function runStreamPushTrigger(
         manualResolve = resolve;
       });
     },
-    closeFunction: async () => {
-      // n8n starts manual trigger teardown before downstream nodes execute.
-      if (this.getMode() === 'manual' && pendingResponses.size > 0 && !manualResponseClosing) {
-        manualResponseClosing = true;
-        await Promise.allSettled([...pendingResponses]);
-      }
-      shouldStayConnected = false;
-      responseShutdown.abort();
-      reconnectQueued = false;
-      if (pendingSocket) {
-        logDebug('DingTalk stream closing pending socket');
-        markSocketForClose(pendingSocket);
-        pendingSocket = null;
-      }
-      resolveManualIfPending();
-      if (socket) {
-        logDebug('DingTalk stream closing active socket');
-        markSocketForClose(socket);
-      }
-      socket = null;
+    closeFunction: () => {
+      closePromise ??= close();
+      return closePromise;
     },
   };
 }
