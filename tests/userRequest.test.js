@@ -46,6 +46,7 @@ test('new user operations expose the documented required fields and page limits'
       .map((p) => p.name)
       .sort();
   assert.deepEqual(required('user.listLeaveRecords'), ['maxResults', 'startTime']);
+  assert.deepEqual(required('user.listDepartmentUserDetails'), ['cursor', 'deptId', 'size']);
   assert.deepEqual(required('user.listDepartmentUsers'), ['cursor', 'deptId', 'size']);
   assert.deepEqual(required('user.listDepartmentUserIds'), ['deptId']);
   assert.equal(
@@ -61,6 +62,7 @@ test('new user operations expose the documented required fields and page limits'
   const node = new DingtalkNode();
   for (const value of [
     'user.listLeaveRecords',
+    'user.listDepartmentUserDetails',
     'user.listDepartmentUsers',
     'user.listDepartmentUserIds',
   ]) {
@@ -200,4 +202,100 @@ test('user ID requests execute per input item and preserve item pairing', async 
     [42, 43],
   );
   assert.deepEqual(output, [responses.map((json, item) => ({ json, pairedItem: { item } }))]);
+});
+
+test('department user details preserve raw fields, pagination and per-item request parameters', async () => {
+  const responses = [
+    {
+      errcode: 0,
+      errmsg: 'ok',
+      result: {
+        list: [{ userid: 'employee-1', dept_id_list: [42, 43], title: 'Manager', boss: false }],
+        has_more: true,
+        next_cursor: 20,
+      },
+    },
+    { errcode: 0, errmsg: 'ok', result: { list: [], has_more: false } },
+  ];
+  const { context, calls } = createContext(
+    [
+      {
+        operation: 'user.listDepartmentUserDetails',
+        deptId: '42',
+        cursor: 0,
+        size: 20,
+        orderField: 'modify_desc',
+        containAccessLimit: false,
+        language: 'en_US',
+      },
+      {
+        operation: 'user.listDepartmentUserDetails',
+        deptId: '43',
+        cursor: 20,
+        size: 100,
+        orderField: 'entry_asc',
+        containAccessLimit: true,
+        language: 'zh_CN',
+      },
+    ],
+    responses,
+  );
+  const output = await new DingtalkNode().execute.call(context);
+  assert.equal(calls.length, 2);
+  for (const call of calls) {
+    assert.equal(call.credentialType, 'dingtalkApi');
+    assert.equal(call.options.method, 'POST');
+    assert.equal(call.options.url, 'https://oapi.dingtalk.com/topapi/v2/user/list');
+    assert.equal(call.options.baseURL, undefined);
+  }
+  assert.deepEqual(
+    calls.map((call) => call.options.body),
+    [
+      {
+        dept_id: 42,
+        cursor: 0,
+        size: 20,
+        order_field: 'modify_desc',
+        contain_access_limit: false,
+        language: 'en_US',
+      },
+      {
+        dept_id: 43,
+        cursor: 20,
+        size: 100,
+        order_field: 'entry_asc',
+        contain_access_limit: true,
+        language: 'zh_CN',
+      },
+    ],
+  );
+  assert.deepEqual(output, [responses.map((json, item) => ({ json, pairedItem: { item } }))]);
+});
+
+test('n8n resolves department user detail defaults without changing the existing basics operation', async () => {
+  const node = new DingtalkNode();
+  for (const [operation, url] of [
+    ['user.listDepartmentUserDetails', 'https://oapi.dingtalk.com/topapi/v2/user/list'],
+    ['user.listDepartmentUsers', 'https://oapi.dingtalk.com/topapi/user/listsimple'],
+  ]) {
+    const parameters = NodeHelpers.getNodeParameters(
+      node.description.properties,
+      { resource: 'user', operation, deptId: '1' },
+      true,
+      false,
+      { typeVersion: 1 },
+      node.description,
+    );
+    const { context, calls } = createContext(parameters, [{ errcode: 0, result: { list: [] } }]);
+    await operations.get(operation).run.call(context, 0);
+    assert.equal(calls[0].options.url, url);
+    assert.deepEqual(calls[0].options.body, {
+      dept_id: 1,
+      cursor: 0,
+      size: 10,
+      order_field: 'custom',
+      contain_access_limit: false,
+      language: 'zh_CN',
+    });
+  }
 });

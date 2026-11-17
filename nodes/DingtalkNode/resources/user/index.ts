@@ -1,6 +1,7 @@
 import { makeResourceBundle } from '../../../shared/resource';
 import get from './get';
 import getByMobile from './getByMobile';
+import listDepartmentUserDetails from './listDepartmentUserDetails';
 import listDepartmentUserIds from './listDepartmentUserIds';
 import listDepartmentUsers from './listDepartmentUsers';
 import listLeaveRecords from './listLeaveRecords';
@@ -13,6 +14,7 @@ export default makeResourceBundle({
   operations: [
     get,
     getByMobile,
+    listDepartmentUserDetails,
     listDepartmentUserIds,
     listDepartmentUsers,
     listLeaveRecords,
