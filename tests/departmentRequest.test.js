@@ -69,6 +69,9 @@ test('department operations are grouped without changing existing user or Stream
   assert.deepEqual(user.operations.map((op) => op.value).sort(), [
     'user.get',
     'user.getByMobile',
+    'user.listDepartmentUserIds',
+    'user.listDepartmentUsers',
+    'user.listLeaveRecords',
     'user.listParentDepartmentIds',
     'user.search',
   ]);
