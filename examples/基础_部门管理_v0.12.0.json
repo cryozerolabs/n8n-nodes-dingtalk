@@ -1,0 +1,796 @@
+{
+  "name": "基础_部门管理_v0.12.0",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d09a5a1c-396f-4043-ab33-30daf44584a8",
+      "name": "手动执行",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33063215-7679-48c3-893d-49ab425ea9d3",
+              "name": "departmentName",
+              "value": "={{ '示例部门' + $now.toMillis() }}",
+              "type": "string"
+            },
+            {
+              "id": "3a1b0d33-b028-438d-9e44-b549cf989db6",
+              "name": "sourceIdentifier",
+              "value": "={{ 'n8nDepartment' + $now.toMillis() }}",
+              "type": "string"
+            },
+            {
+              "id": "fb685687-b2d2-4c41-aec8-910da7dcab06",
+              "name": "userId",
+              "value": "填写用户的 userId",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30815038-8d22-4312-9c54-5270febd6de3",
+      "name": "参数配置",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.list",
+        "deptId": "1"
+      },
+      "id": "0b6f8c05-ed80-4ca1-9449-0dda64d91d4a",
+      "name": "获取部门列表",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "notes": "返回指定部门的直属子部门基础信息，不递归。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.search",
+        "queryWord": "={{ $('获取部门列表').first().json.result[0]?.name || '测试' }}"
+      },
+      "id": "d6917038-ecc8-456a-be83-30891d6504f4",
+      "name": "搜索部门 ID",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.listSubIds",
+        "deptId": "1"
+      },
+      "id": "41bf6745-3f2c-4695-9881-9b3de5b41c5f",
+      "name": "获取子部门 ID",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ],
+      "notes": "只返回直属下一级部门 ID。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.listParentIds",
+        "deptId": "={{ $('获取部门列表').first().json.result[0]?.dept_id || 1 }}"
+      },
+      "id": "3e2d8d27-6503-4a6a-baac-a43826937798",
+      "name": "获取部门父路径",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        0
+      ],
+      "notes": "返回所选部门的父级路径，包含部门自身。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "user",
+        "operation": "user.listParentDepartmentIds",
+        "userId": "={{ $('参数配置').first().json.userId }}"
+      },
+      "id": "532b7b06-b986-4cdf-912a-e8de4b7219ff",
+      "name": "获取用户父路径",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        240,
+        240
+      ],
+      "notes": "用户可能属于多个部门，结果按部门分别返回父级路径。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.create",
+        "name": "={{ $('参数配置').first().json.departmentName }}",
+        "additionalFields": {
+          "hideDept": true,
+          "order": 99,
+          "sourceIdentifier": "={{ $('参数配置').first().json.sourceIdentifier }}"
+        }
+      },
+      "id": "ffc4ddec-9fdc-43b9-9d08-29da65bb6e1e",
+      "name": "创建部门",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        480,
+        240
+      ],
+      "notes": "创建后的 result.dept_id 会用于后续读取、更新和删除。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.get",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}"
+      },
+      "id": "55afd6ad-016d-4ca2-aa1c-4f4edab27422",
+      "name": "获取部门详情（创建后）",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        720,
+        240
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.update",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}",
+        "additionalFields": {
+          "name": "={{ $('参数配置').first().json.departmentName + '更新' }}",
+          "hideDept": false,
+          "order": 0
+        }
+      },
+      "id": "591342c9-16a3-44b6-93bd-e93f4a44f553",
+      "name": "更新部门（表单）",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        240,
+        480
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "只提交已填写的字段；false 和 0 会保留，未填写字段保持原值。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.get",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}"
+      },
+      "id": "0e1db5d4-0926-49ef-ac72-2544f7354e3f",
+      "name": "获取部门详情（表单更新后）",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        480,
+        480
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.delete",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}"
+      },
+      "id": "797c0a98-a59b-4492-91ea-53449f706f88",
+      "name": "删除部门",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        240,
+        960
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "删除本流程创建的示例部门。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.listSubIds",
+        "deptId": "1"
+      },
+      "id": "9c5ad478-7d06-4d5a-9bc8-14b773230dd7",
+      "name": "确认部门已删除",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        496,
+        960
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "在子部门 ID 列表中确认本次创建的部门已移除。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81c52874-adb8-457c-b444-a8d1385e76ad",
+              "name": "全部操作成功",
+              "value": "={{ !$('获取部门列表').first().json.error && (!$('获取部门列表').first().json.errcode || $('获取部门列表').first().json.errcode === 0) && !$('搜索部门 ID').first().json.error && (!$('搜索部门 ID').first().json.errcode || $('搜索部门 ID').first().json.errcode === 0) && !$('获取子部门 ID').first().json.error && (!$('获取子部门 ID').first().json.errcode || $('获取子部门 ID').first().json.errcode === 0) && !$('获取部门父路径').first().json.error && (!$('获取部门父路径').first().json.errcode || $('获取部门父路径').first().json.errcode === 0) && !$('获取用户父路径').first().json.error && (!$('获取用户父路径').first().json.errcode || $('获取用户父路径').first().json.errcode === 0) && !$('创建部门').first().json.error && (!$('创建部门').first().json.errcode || $('创建部门').first().json.errcode === 0) && !$('获取部门详情（创建后）').first().json.error && (!$('获取部门详情（创建后）').first().json.errcode || $('获取部门详情（创建后）').first().json.errcode === 0) && !$('更新部门（表单）').first().json.error && (!$('更新部门（表单）').first().json.errcode || $('更新部门（表单）').first().json.errcode === 0) && !$('获取部门详情（表单更新后）').first().json.error && (!$('获取部门详情（表单更新后）').first().json.errcode || $('获取部门详情（表单更新后）').first().json.errcode === 0) && !$('删除部门').first().json.error && (!$('删除部门').first().json.errcode || $('删除部门').first().json.errcode === 0) && !$('确认部门已删除').first().json.error && (!$('确认部门已删除').first().json.errcode || $('确认部门已删除').first().json.errcode === 0) && !$('更新部门（JSON）').first().json.error && (!$('更新部门（JSON）').first().json.errcode || $('更新部门（JSON）').first().json.errcode === 0) && !$('获取部门详情（JSON更新后）').first().json.error && (!$('获取部门详情（JSON更新后）').first().json.errcode || $('获取部门详情（JSON更新后）').first().json.errcode === 0) }}",
+              "type": "boolean"
+            },
+            {
+              "id": "48e8a755-7664-4756-96be-a7e5fccf5281",
+              "name": "部门已显示",
+              "value": "={{ $('获取部门详情（表单更新后）').first().json.result?.hide_dept === false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "8698ca6e-f63c-4915-898a-1ae2cf1140ec",
+              "name": "排序值为 0",
+              "value": "={{ $('获取部门详情（表单更新后）').first().json.result?.order === 0 }}",
+              "type": "boolean"
+            },
+            {
+              "id": "721fafef-a903-4a16-a15f-8681340de47f",
+              "name": "外部标识保持不变",
+              "value": "={{ $('获取部门详情（表单更新后）').first().json.result?.source_identifier === $('参数配置').first().json.sourceIdentifier }}",
+              "type": "boolean"
+            },
+            {
+              "id": "1c493cf8-c4fa-434e-b508-840bc547f8c1",
+              "name": "部门名称已更新",
+              "value": "={{ $('获取部门详情（表单更新后）').first().json.result?.name === $('参数配置').first().json.departmentName + '更新' }}",
+              "type": "boolean"
+            },
+            {
+              "id": "f4fe3e3d-1a6c-44c6-bef4-e00a88525245",
+              "name": "部门已删除",
+              "value": "={{ Array.isArray($('确认部门已删除').first().json.result?.dept_id_list) && !$('确认部门已删除').first().json.result.dept_id_list.includes($('创建部门').first().json.result.dept_id) }}",
+              "type": "boolean"
+            },
+            {
+              "id": "fa7baca1-061b-4190-a97c-17964ccdba01",
+              "name": "部门 ID",
+              "value": "={{ $('创建部门').first().json.result.dept_id }}",
+              "type": "number"
+            },
+            {
+              "id": "c03b67e5-c390-448f-a67d-22c6de157f10",
+              "name": "JSON 更新结果正确",
+              "type": "boolean",
+              "value": "={{ $('获取部门详情（JSON更新后）').first().json.result?.name === $('参数配置').first().json.departmentName + 'JSON' && $('获取部门详情（JSON更新后）').first().json.result?.hide_dept === false && $('获取部门详情（JSON更新后）').first().json.result?.order === 0 && $('获取部门详情（JSON更新后）').first().json.result?.source_identifier === $('参数配置').first().json.sourceIdentifier }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "147572fe-c7c8-41ad-aad8-79dbf98dbe80",
+      "name": "汇总操作结果",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ddd8bc35-5eed-4204-b073-4dbb0f5acb5f",
+              "leftValue": "={{ $json[\"全部操作成功\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2f6711a8-40d3-4830-bb94-e110223a1df9",
+              "leftValue": "={{ $json[\"部门已显示\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "34a35395-b7bd-404f-ba9f-3a3a235eecff",
+              "leftValue": "={{ $json[\"排序值为 0\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "39340f2f-f793-4053-943d-533d69b446c0",
+              "leftValue": "={{ $json[\"外部标识保持不变\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "83f94376-918b-45e0-9a68-7c77b97b8b67",
+              "leftValue": "={{ $json[\"部门名称已更新\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bba65d77-d03e-4063-a636-8876d7863a47",
+              "leftValue": "={{ $json[\"部门已删除\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8fc40def-476f-4871-8a7e-40e26e689276",
+              "leftValue": "={{ $json['JSON 更新结果正确'] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "89f7064e-ed88-4a6b-bd73-041a6d75469c",
+      "name": "操作是否成功",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c1c8100-570e-4dad-a997-103e3e37ea1f",
+              "name": "状态",
+              "value": "部门操作完成，示例部门已删除",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "9bf3b883-03de-41e4-8619-494478e1cb58",
+      "name": "示例完成",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "errorMessage": "部分操作未完成，请查看「汇总操作结果」及相关节点输出。"
+      },
+      "id": "44ec559d-d71b-457e-ad78-a070c0fc2688",
+      "name": "处理异常",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.update",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}",
+        "sendBody": "json",
+        "jsonBody": "={{ { name: $('参数配置').first().json.departmentName + 'JSON', hide_dept: false, order: 0 } }}"
+      },
+      "id": "a6061dc4-52ef-48f5-adb1-d337b7b9f422",
+      "name": "更新部门（JSON）",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        240,
+        720
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "JSON 使用钉钉 API 字段名；目标部门由部门 ID 参数指定。",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "department",
+        "operation": "department.get",
+        "deptId": "={{ $('创建部门').first().json.result.dept_id }}"
+      },
+      "id": "7704db6a-f79a-4aaf-9679-c3aa4efdfbb6",
+      "name": "获取部门详情（JSON更新后）",
+      "type": "@cryozerolabs/n8n-nodes-dingtalk.dingtalkNode",
+      "typeVersion": 1,
+      "position": [
+        496,
+        720
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "1c185932-32cc-4d56-9da0-89b9fe711b68",
+      "name": "配置说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -110
+      ],
+      "parameters": {
+        "content": "## 参数配置\n选择钉钉凭证，在「参数配置」填写 userId。\n需要部门信息读、通讯录搜索、通讯录数据管理权限。",
+        "width": 480,
+        "height": 260,
+        "color": 5
+      }
+    },
+    {
+      "id": "cd0cab26-8eb1-4d2e-8122-63b89974d5a6",
+      "name": "查询说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -110
+      ],
+      "parameters": {
+        "content": "## 部门查询\n部门列表和子部门 ID 仅返回直属下一级；父部门接口返回上级路径。",
+        "width": 1040,
+        "height": 260,
+        "color": 4
+      }
+    },
+    {
+      "id": "1f90751b-96de-451f-b793-3aa8891dfc7e",
+      "name": "用户层级说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        160
+      ],
+      "parameters": {
+        "content": "## 用户所属部门\n按 userId 查询所属部门的上级路径。",
+        "width": 240,
+        "height": 240,
+        "color": 5
+      }
+    },
+    {
+      "id": "52db8c6b-a1f9-442b-8d8f-725510c8d22c",
+      "name": "创建说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        160
+      ],
+      "parameters": {
+        "content": "## 创建部门\n创建示例部门，设置隐藏、排序和外部标识，再读取详情。",
+        "width": 520,
+        "height": 240,
+        "color": 3
+      }
+    },
+    {
+      "id": "d16d1219-feb2-4bbd-ac4e-06da9c58ef43",
+      "name": "表单更新说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        400
+      ],
+      "parameters": {
+        "content": "## 表单更新\n隐藏状态设为 false，排序设为 0；外部标识不填，回读确认保持不变。",
+        "width": 640,
+        "height": 240,
+        "color": 4
+      }
+    },
+    {
+      "id": "c3e0b009-12e1-4bb3-b828-fd3f38d0213f",
+      "name": "JSON更新说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        640
+      ],
+      "parameters": {
+        "content": "## JSON 更新\n使用 API 字段名更新同一部门，读取详情对照结果。",
+        "width": 640,
+        "height": 240,
+        "color": 6
+      }
+    },
+    {
+      "id": "d0ef4212-0d56-4411-9ff9-e0ccb3f83f36",
+      "name": "删除说明",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        880
+      ],
+      "parameters": {
+        "content": "## 删除与结果\n删除本次创建的部门，查询列表确认移除，再汇总操作结果。",
+        "width": 1240,
+        "height": 420,
+        "color": 3
+      }
+    }
+  ],
+  "connections": {
+    "手动执行": {
+      "main": [
+        [
+          {
+            "node": "参数配置",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "参数配置": {
+      "main": [
+        [
+          {
+            "node": "获取部门列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取部门列表": {
+      "main": [
+        [
+          {
+            "node": "搜索部门 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "搜索部门 ID": {
+      "main": [
+        [
+          {
+            "node": "获取子部门 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取子部门 ID": {
+      "main": [
+        [
+          {
+            "node": "获取部门父路径",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取部门父路径": {
+      "main": [
+        [
+          {
+            "node": "获取用户父路径",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取用户父路径": {
+      "main": [
+        [
+          {
+            "node": "创建部门",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "创建部门": {
+      "main": [
+        [
+          {
+            "node": "获取部门详情（创建后）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取部门详情（创建后）": {
+      "main": [
+        [
+          {
+            "node": "更新部门（表单）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新部门（表单）": {
+      "main": [
+        [
+          {
+            "node": "获取部门详情（表单更新后）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取部门详情（表单更新后）": {
+      "main": [
+        [
+          {
+            "node": "更新部门（JSON）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "删除部门": {
+      "main": [
+        [
+          {
+            "node": "确认部门已删除",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "确认部门已删除": {
+      "main": [
+        [
+          {
+            "node": "汇总操作结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "汇总操作结果": {
+      "main": [
+        [
+          {
+            "node": "操作是否成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "操作是否成功": {
+      "main": [
+        [
+          {
+            "node": "示例完成",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "处理异常",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新部门（JSON）": {
+      "main": [
+        [
+          {
+            "node": "获取部门详情（JSON更新后）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取部门详情（JSON更新后）": {
+      "main": [
+        [
+          {
+            "node": "删除部门",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "binaryMode": "separate"
+  },
+  "pinData": {}
+}

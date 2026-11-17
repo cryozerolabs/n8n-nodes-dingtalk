@@ -88,6 +88,24 @@
 - **获取用户详情** - 根据 userId 获取用户信息(unionId)
 - **根据手机号查询用户** - 根据手机号获取用户的userId
 - **搜索用户userId** - 获取指定用户的详细信息
+- **获取用户的所有父部门** - 根据 userId 获取所属部门的上级路径
+- **查询离职记录列表** - 按时间范围分页查询企业离职记录
+- **获取部门用户基础信息** - 分页获取当前部门成员的 userId 和姓名
+- **获取部门用户详情列表** - 分页获取当前部门成员的详细信息
+- **获取部门用户 ID 列表** - 根据部门 ID 获取成员的 userId
+
+### 🏢 部门管理 (Department)
+
+![部门管理](docs/images/department-guide.jpg)
+
+- 创建部门
+- 更新部门
+- 删除部门
+- 搜索部门 ID
+- 获取部门详情
+- 获取直属子部门列表
+- 获取直属子部门 ID 列表
+- 获取部门的所有父部门
 
 ### 💼 OA审批（workflow）
 
@@ -125,6 +143,8 @@
 ![Stream Push](docs/images/stream-push-guide.png)
 
 - **Stream模式推送** - 触发器，监听事件订阅回调，Stream 模式不需要公网服务器、IP、域名等资源。
+- **事件响应** - 默认立即响应，也可使用“事件订阅 → 响应事件”节点回复 `SUCCESS` 或 `LATER`（[示例](examples/基础_Stream事件响应.json)）。
+- **获取推送失败事件** - 获取当前应用的失败事件，单次最多 200 条，原样返回事件列表及是否还有更多记录；读取后请及时保存。
 
 ## 🚀 安装指南
 
@@ -152,7 +172,7 @@
 
 在 n8n 中创建 **钉钉 API** 凭据：
 
-- **Corp ID**: 你的钉钉应用运行的组织ID，在[钉钉开放平台开发者后台](https://open-dev.dingtalk.com/)获取
+- **Corp ID**: 钉钉组织 ID，仅在“获取当前应用的 Access Token”操作中作为附加信息返回，不参与鉴权
 - **Client ID**: 你的钉钉应用 ClientId
 - **Client Secret**: 你的钉钉应用 ClientSecret
 - **操作人 unionId（可选）**: 如果已经拿到常用操作人的 unionId，可在此填写，节点会默认复用，可以通过 用户管理 查询用户详情 节点获取后回写到凭证中；也可留空，后续在节点中按需覆盖；
@@ -238,6 +258,7 @@
   - 记录完整 CRUD 操作
   - 访问令牌获取
 - **机器人发送群聊消息** ([基础_机器人发送群聊消息_v0.11.0.json](examples/基础_机器人发送群聊消息_v0.11.0.json)) - 演示文本、Markdown、ActionCard，以及文件上传后发送到群聊
+- **部门管理** ([基础_部门管理_v0.12.0.json](examples/基础_部门管理_v0.12.0.json)) - 演示部门查询、创建、表单与 JSON 更新、删除及结果汇总
 - **更多示例正在开发中** - 用户管理、身份验证、扩展功能等
 
 ### 导入工作流
@@ -274,6 +295,15 @@
 - [功能请求](https://github.com/cryozerolabs/n8n-nodes-dingtalk/discussions)
 
 ## 📋 版本历史
+
+### v0.12.0
+
+- 新增：事件订阅支持获取当前应用的推送失败事件。
+- 新增：用户管理支持查询离职记录、部门用户基础信息、详情列表及用户 ID 列表。
+- 新增：部门管理，支持部门增删改、搜索、详情及层级查询；用户管理支持查询所有父部门。
+- 新增：Stream 响应节点，支持回复 `SUCCESS` 或 `LATER`；旧工作流保持立即响应。
+- 修复：Stream 建连增加超时与重连退避，停用工作流时清理连接并停止重连。
+- 修复：Dingtalk API 凭证中的组织 ID（Corp ID）改为选填。
 
 ### v0.11.0
 
@@ -324,21 +354,21 @@
 - 新增：批量发送人与机器人会话中机器人消息
   感谢 [@daixin](https://github.com/daixin) 的贡献。
 
-## v0.6.1
+### v0.6.1
 
 - 修复：将`streamPushTrigger`中的`reconnectTimer`和`heartbeatTimer`替换为`cron-scheduled pings`和`explicit connection state management`, 主动发送ping包，避免连接断开。
 
-## v0.6.0
+### v0.6.0
 
 - 新增：钉钉表格操作，包括工作表、行列、单元格区域
 - 新增：钉钉表格额外新增插入数据行
 - 修改：如果需要操作人unionId则会先检查是否有值
 
-## v0.5.1
+### v0.5.1
 
 - 修改: 请求钉钉API返回的结果如果包含`errcode`，则将`errmsg`作为错误信息返回, 而不是当作正常的请求返回
 
-## v0.5.0
+### v0.5.0
 
 - 新增：部分常用的审批操作
 - 新增：钉钉机器人发送、撤回DING消息（钉钉专业版）
@@ -348,7 +378,7 @@
 - 修复：将常用的eslint统一管理
 - 修复：Http Request中Predefined Credential Type不能选择Dingtalk API、Dingtalk Robot API的问题
 
-## v0.4.0
+### v0.4.0
 
 - 新增：根据手机号查询用户、搜索用户userId，简化用户获取unionId的步骤
 - 新增：⚡️Stream模式事件订阅触发器
@@ -473,6 +503,12 @@ npm run release
       <a href="https://github.com/Reol077">
         <img src="https://github.com/Reol077.png?size=80" width="64" height="64" alt="Reol077" /><br />
         <sub><b>Reol077</b></sub>
+      </a>
+    </td>
+    <td align="center" width="120">
+      <a href="https://github.com/Mirroraoaoao">
+        <img src="https://github.com/Mirroraoaoao.png?size=80" width="64" height="64" alt="Mirroraoaoao" /><br />
+        <sub><b>Mirroraoaoao</b></sub>
       </a>
     </td>
   </tr>

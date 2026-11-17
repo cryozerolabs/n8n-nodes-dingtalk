@@ -24,9 +24,9 @@ export class DingtalkApi implements ICredentialType {
       displayName: '组织ID (Corp ID)',
       name: 'corpId',
       type: 'string',
-      required: true,
+      required: false,
       default: '',
-      description: '钉钉组织ID，应用运行在哪个组织就填写哪个组织的corpId',
+      description: '仅在“获取当前应用的 Access Token”操作中作为附加信息返回，不参与鉴权',
     },
     {
       displayName: '应用ID (Client ID)',

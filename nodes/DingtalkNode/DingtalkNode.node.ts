@@ -12,9 +12,11 @@ import type { ResourceBundle } from '../shared/resource';
 import type { OperationDef } from '../shared/operation';
 import apiBundle from './resources/api';
 import authBundle from './resources/auth';
+import departmentBundle from './resources/department';
 import docBundle from './resources/doc';
 import notableBundle from './resources/notable';
 import robotBundle from './resources/robot';
+import streamBundle from './resources/stream';
 import todoBundle from './resources/todo';
 import userBundle from './resources/user';
 import workflowBundle from './resources/workflow';
@@ -24,9 +26,11 @@ import workbooksBundle from './resources/workbooks';
 const bundles: ResourceBundle[] = [
   apiBundle,
   authBundle,
+  departmentBundle,
   docBundle,
   notableBundle,
   robotBundle,
+  streamBundle,
   todoBundle,
   userBundle,
   workflowBundle,
@@ -108,7 +112,7 @@ export class DingtalkNode implements INodeType {
         required: true,
         displayOptions: {
           hide: {
-            operation: ['robot.send', 'notable.parseUrl'],
+            operation: ['robot.send', 'notable.parseUrl', 'stream.respond'],
           },
         },
       },
