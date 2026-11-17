@@ -354,21 +354,21 @@
 - 新增：批量发送人与机器人会话中机器人消息
   感谢 [@daixin](https://github.com/daixin) 的贡献。
 
-## v0.6.1
+### v0.6.1
 
 - 修复：将`streamPushTrigger`中的`reconnectTimer`和`heartbeatTimer`替换为`cron-scheduled pings`和`explicit connection state management`, 主动发送ping包，避免连接断开。
 
-## v0.6.0
+### v0.6.0
 
 - 新增：钉钉表格操作，包括工作表、行列、单元格区域
 - 新增：钉钉表格额外新增插入数据行
 - 修改：如果需要操作人unionId则会先检查是否有值
 
-## v0.5.1
+### v0.5.1
 
 - 修改: 请求钉钉API返回的结果如果包含`errcode`，则将`errmsg`作为错误信息返回, 而不是当作正常的请求返回
 
-## v0.5.0
+### v0.5.0
 
 - 新增：部分常用的审批操作
 - 新增：钉钉机器人发送、撤回DING消息（钉钉专业版）
@@ -378,7 +378,7 @@
 - 修复：将常用的eslint统一管理
 - 修复：Http Request中Predefined Credential Type不能选择Dingtalk API、Dingtalk Robot API的问题
 
-## v0.4.0
+### v0.4.0
 
 - 新增：根据手机号查询用户、搜索用户userId，简化用户获取unionId的步骤
 - 新增：⚡️Stream模式事件订阅触发器
