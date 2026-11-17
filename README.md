@@ -508,6 +508,12 @@ npm run release
         <sub><b>Reol077</b></sub>
       </a>
     </td>
+    <td align="center" width="120">
+      <a href="https://github.com/Mirroraoaoao">
+        <img src="https://github.com/Mirroraoaoao.png?size=80" width="64" height="64" alt="Mirroraoaoao" /><br />
+        <sub><b>Mirroraoaoao</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
 
